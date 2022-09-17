@@ -1,2 +1,4 @@
-import "./FsmProcessTest.js";
-import "./FsmProcessContinuationTest.js";
+import "./newProcessLoggerTest.js";
+import "./combineHandlersTest.js";
+import "./attachStatePrinterTest.js";
+import "./newStateHandlerTest.js";

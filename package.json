@@ -16,7 +16,7 @@
     "index.js"
   ],
   "dependencies": {
-    "@statewalker/fsm": "0.9.4"
+    "@statewalker/fsm": "0.14.0"
   },
   "devDependencies": {
     "@statewalker/rollup": "^0.1.5",
