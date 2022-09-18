@@ -1,5 +1,11 @@
 # @statewalker/fsm-process
 
+## 0.16.0
+
+### Minor Changes
+
+- Migrate dump/restore functionality
+
 ## 0.15.3
 
 ### Patch Changes
