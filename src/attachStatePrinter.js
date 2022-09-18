@@ -1,7 +1,13 @@
-export default function attachStatePrinter({ prefix = "", print = console.log } = {}) {
+export default function attachStatePrinter({
+  prefix = "",
+  print = console.log,
+  lineNumbers = false
+} = {}) {
+  let counter = 0;
   return (state) => {
     state.print = (...args) => {
-      const shift = state.process.stack.map(() => "  ").join("");
+      let shift = state.process.stack.map(() => "  ").join("");
+      lineNumbers && (shift = `[${++counter}]${shift}`)
       print(prefix, shift, ...args);
     };
   };

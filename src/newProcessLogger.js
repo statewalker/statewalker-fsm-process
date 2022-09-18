@@ -1,10 +1,7 @@
-export default function newProcessLogger({ prefix = "", log = console.log } = {}) {
-  let counter = 0;
+export default function newProcessLogger({ log, prefix } = {}) {
   return (state) => {
-    const print = (...args) => {
-      let shift = state.process.stack.map(() => "  ").join("");
-      log(prefix, `[${++counter}]`, shift, ...args);
-    };
+    let print = (log || state.print || console.log);
+    print = prefix ? print.bind(state, prefix) : print.bind(state);
     state.init(() =>
       print(`<${state.key} event="${state.getEventKey()}">`)
     );
