@@ -1,9 +1,9 @@
 import expect from 'expect.js';
-import { initAsyncProcess } from "../src/index.js";
-import config from "./productCatalogStatechart.js";
+import initAsyncProcess from "../src/initAsyncProcess.js";
 import newProcessLogger from "../src/newProcessLogger.js"
 import combineHandlers from '../src/combineHandlers.js';
 import attachStatePrinter from "../src/attachStatePrinter.js"
+import config from "./productCatalogStatechart.js";
 
 describe('newProcessLogger', () => {
 
