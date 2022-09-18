@@ -1,6 +1,6 @@
 {
   "name": "@statewalker/fsm-process",
-  "version": "0.15.1",
+  "version": "0.15.2",
   "description": "FSM-based processes",
   "keywords": [],
   "homepage": "https://github.com/statewalker/statewalker-fsm-process",
