@@ -1,5 +1,11 @@
 # @statewalker/fsm-process
 
+## 0.15.3
+
+### Patch Changes
+
+- Update line numbers generation
+
 ## 0.15.2
 
 ### Patch Changes
