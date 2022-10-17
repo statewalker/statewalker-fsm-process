@@ -1,7 +1,8 @@
 import expect from 'expect.js';
 import initAsyncProcess from "../src/initAsyncProcess.js";
-import combineHandlers from '../src/combineHandlers.js';
-import newStateHandler from "../src/newStateHandler.js"
+import newProcessLogger from "../src/newProcessLogger.js"
+import { initPrinter, usePrinter, getProcessPrint } from "../src/hooks.printer.js";
+import { useDump, useRestore, useInit, useStateKey } from '../src/hooks.js';
 
 describe('dump/restore: process is dumped and restored at each step', () => {
 
@@ -26,47 +27,51 @@ describe('dump/restore: process is dumped and restored at each step', () => {
     ]
   }
 
-  let dump, stepId = 0, traces = [];
+  function newPrintChecker() {
+    const lines = [];
+    return [(...args) => lines.push(args), (...control) => {
+      expect(lines.map(items => items.join(''))).to.eql(control);
+  }];
+  }
+  
+
+  let dump, stepId = 0;
+  const [addTraces, checkTraces] = newPrintChecker();
   let dumped = [], restored = [];
   async function run(...events) {
-    const handler = combineHandlers(
-      (state) => {
-        state.print = state.process.print = state.process.print || ((msg) => {
-          let shift = '';
-          for (let i = 0; i < process.stack.length; i++) {
-            shift += '  ';
+    const process = initAsyncProcess({
+      config,
+      initialize : initPrinter({ print : addTraces}),
+      handler : [
+        newProcessLogger(),
+        () => {
+          const stateKey = useStateKey();
+          useDump((data) => {
+            dumped.push(`${stateKey}:${stepId}`);
+            data.stepId = stepId;
+          })
+          useRestore((dump) => {
+            restored.push(`${stateKey}:${dump.stepId}`)
+          })
+        },
+        {
+          'HandleError': () => {
+            const print = usePrinter();
+            useInit(() => print('HANDLE ERROR'))
           }
-          traces.push(shift + msg);
-        })
-      },
-      ({ key, getEventKey, init, done, print }) => {
-        init(() => print(`<${key} event="${getEventKey()}">`));
-        done(() => print(`</${key}>`))
-      },
-      ({ key, dump, restore }) => {
-        dump((data) => {
-          dumped.push(`${key}:${stepId}`);
-          data.stepId = stepId;
-        })
-        restore((dump) => {
-          restored.push(`${key}:${dump.stepId}`)
-        })
-      },
-      newStateHandler({
-        'HandleError': ({ init, print }) => {
-          init(() => print('HANDLE ERROR'))
-        }
-      }),
-    );
+        },
+      ],
+      handleError: console.error
+    });
     
-    const process = initAsyncProcess({ config, handler, handleError: console.error });
-    if (dump) await process.restore(dump);
 
+    if (dump) await process.restore(dump);
+    const processPrint = getProcessPrint(process);
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
       process.dispatch(event);
       await process.running;
-      process.print(`step ${++stepId}`);
+      processPrint(`step ${++stepId}`);
     }
     dump = await process.dump();
     // console.log(dump)
@@ -82,7 +87,7 @@ describe('dump/restore: process is dumped and restored at each step', () => {
       '  <Wait event="">',
       '  step 1'
     );
-    expect(traces).to.eql(control);
+    checkTraces(...control);
     expect(dump).to.eql({
       status: 4,
       event: { key: '', params: {} },
@@ -97,12 +102,12 @@ describe('dump/restore: process is dumped and restored at each step', () => {
   it(`continue the process and stop at the embedded wait state cleaning events`, async () => {
     await run('select');
     control.push(
-      '  </Wait>',
+      '  </Wait> <!-- event="select" -->',
       '  <Selected event="select">',
       '    <Wait event="select">',
       '    step 2'
     );
-    expect(traces).to.eql(control);
+    checkTraces(...control);
     expect(restored).to.eql(['Selection:1', 'Wait:1']);
     expect(dumped).to.eql(['Selection:2', 'Selected:2', 'Wait:2']);
     dumped = []; restored = [];
@@ -111,14 +116,14 @@ describe('dump/restore: process is dumped and restored at each step', () => {
   it(`the same event triggers an internal transition between sub-states`, async () => {
     await run('select', '');
     control.push(
-      '    </Wait>',
+      '    </Wait> <!-- event="select" -->',
       '    <UpdateSelection event="select">',
       '    step 3',
-      '    </UpdateSelection>',
+      '    </UpdateSelection> <!-- event="" -->',
       '    <Wait event="">',
       '    step 4'
     );
-    expect(traces).to.eql(control);
+    checkTraces(...control);
     expect(restored).to.eql(['Selection:2', 'Selected:2', 'Wait:2']);
     // The step 3 is skipped
     expect(dumped).to.eql(['Selection:4', 'Selected:4', 'Wait:4']);
@@ -128,12 +133,12 @@ describe('dump/restore: process is dumped and restored at each step', () => {
   it(`an event not defined in the sub-state moves the process to the parent state`, async () => {
     await run('reset');
     control.push(
-      '    </Wait>',
-      '  </Selected>',
+      '    </Wait> <!-- event="reset" -->',
+      '  </Selected> <!-- event="reset" -->',
       '  <Wait event="reset">',
       '  step 5'
     );
-    expect(traces).to.eql(control);
+    checkTraces(...control);
     expect(restored).to.eql(['Selection:4', 'Selected:4', 'Wait:4']);
     expect(dumped).to.eql(['Selection:5', 'Wait:5']);
     dumped = []; restored = [];
@@ -142,12 +147,12 @@ describe('dump/restore: process is dumped and restored at each step', () => {
   it(`check error handling`, async () => {
     await run('error');
     control.push(
-      '  </Wait>',
+      '  </Wait> <!-- event="error" -->',
       '  <HandleError event="error">',
       '  HANDLE ERROR',
       '  step 6',
     );
-    expect(traces).to.eql(control);
+    checkTraces(...control);
     expect(restored).to.eql(['Selection:5', 'Wait:5']);
     expect(dumped).to.eql(['Selection:6', 'HandleError:6']);
     dumped = []; restored = [];
@@ -156,11 +161,11 @@ describe('dump/restore: process is dumped and restored at each step', () => {
   it(`go to the internal wait state`, async () => {
     await run('');
     control.push(
-      '  </HandleError>',
+      '  </HandleError> <!-- event="" -->',
       '  <Wait event="">',
       '  step 7',
     );
-    expect(traces).to.eql(control);
+    checkTraces(...control);
     expect(dump.status).to.eql(4);
     expect(restored).to.eql(['Selection:6', 'HandleError:6']);
     expect(dumped).to.eql(['Selection:7', 'Wait:7']);
@@ -170,11 +175,11 @@ describe('dump/restore: process is dumped and restored at each step', () => {
   it(`check events handling not available in the transition descriptions`, async () => {
     await run('toto');
     control.push(
-      '  </Wait>',
+      '  </Wait> <!-- event="toto" -->',
       '  <Wait event="toto">',
       '  step 8'
     );
-    expect(traces).to.eql(control);
+    checkTraces(...control);
     expect(dump.status).to.eql(4);
     expect(restored).to.eql(['Selection:7', 'Wait:7']);
     expect(dumped).to.eql(['Selection:8', 'Wait:8']);
@@ -184,11 +189,11 @@ describe('dump/restore: process is dumped and restored at each step', () => {
   it(`finalize process`, async () => {
     await run('exit');
     control.push(
-      '  </Wait>',
-      '</Selection>',
+      '  </Wait> <!-- event="exit" -->',
+      '</Selection> <!-- event="exit" -->',
       'step 9'
     );
-    expect(traces).to.eql(control);
+    checkTraces(...control);
     expect(dump.status).to.eql(0);
     expect(restored).to.eql(['Selection:8', 'Wait:8']);
     expect(dumped).to.eql([]);

@@ -1,9 +1,9 @@
 import expect from 'expect.js';
 import initAsyncProcess from "../src/initAsyncProcess.js";
 import newProcessLogger from "../src/newProcessLogger.js"
-import combineHandlers from '../src/combineHandlers.js';
-import attachStatePrinter from "../src/attachStatePrinter.js"
+import { initPrinter } from "../src/hooks.printer.js";
 import config from "./productCatalogStatechart.js";
+
 
 describe('newProcessLogger', () => {
 
@@ -15,11 +15,12 @@ describe('newProcessLogger', () => {
   it(`should track transitions between states`, async () => {
     const [lines, checkLines] = newPrintChecker();
 
-    const handler = combineHandlers(
-      attachStatePrinter({ print: (...args) => lines.push(args), lineNumbers : true }),
-      newProcessLogger()
-    );
-    const process = initAsyncProcess({ config, handler, handleError: console.error });
+    const process = initAsyncProcess({
+      config,
+      initialize : initPrinter({ print: (...args) => lines.push(args), lineNumbers : true }),
+      handler : newProcessLogger(),
+      handleError: console.error
+    });
 
     await process.next({ key: "start" });
     checkLines(
@@ -75,11 +76,17 @@ describe('newProcessLogger', () => {
 
   it(`should be able to add a prefix to all lines`, async () => {
     const [lines, checkLines] = newPrintChecker();
-    const handler = combineHandlers(
-      attachStatePrinter({ print: (...args) => lines.push(args), prefix: 'abc', lineNumbers : true }),
-      newProcessLogger()
-    );
-    const process = initAsyncProcess({ config, handler, handleError: console.error });
+    const process = initAsyncProcess({
+      config,
+      config,
+      initialize : initPrinter({
+        print: (...args) => lines.push(args),
+        lineNumbers : true,
+        prefix : "abc"
+      }),
+      handler : newProcessLogger(),
+      handleError: console.error
+    });
 
     await process.next({ key: "start" });
     checkLines(

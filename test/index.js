@@ -1,5 +1,5 @@
+import "./handlersTest.js";
+import "./hooksTest.js"
 import "./newProcessLoggerTest.js";
-import "./combineHandlersTest.js";
-import "./attachStatePrinterTest.js";
-import "./newStateHandlerTest.js";
 import "./processDumpRestoreTest.js";
+import "./usePrinterTest.js"

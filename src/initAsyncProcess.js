@@ -1,17 +1,31 @@
 import { newAsyncProcess, getStateDescriptor } from "@statewalker/fsm";
+import { _setState } from "./hooks.js";
+import { checkProcessHandler } from "./handlers.js";
 
-export default function initAsyncProcess({ config, handler, handleError = console.error }) {
+export default function initAsyncProcess({ config, handler, initialize = ()=>{}, handleError = console.error }) {
+
+  handler = checkProcessHandler(handler);
+  initialize = checkProcessHandler(initialize);
+
+  const callStateHandler = (state) => {
+    try {
+      _setState(state);
+      handler(state);
+    } finally {
+      _setState(undefined);
+    }
+  }
 
   const before = async (process, ...args) => {
     process._started = true;
     const state = process.current;
-    handler(state);
-    await state.init.run(...args);
+    callStateHandler(state);
+    await state.init.run(state, ...args);
   };
 
   const after = async (process) => {
     const state = process.current;
-    await state.done.run();
+    await state.done.run(state);
   };
 
   const newProcess = (descriptor) => {
@@ -49,6 +63,7 @@ export default function initAsyncProcess({ config, handler, handleError = consol
     newState,
     handleError
   });
+  initialize(process);
 
   process.dispatch = (key, params = {}) => {
     process.next({ key, params });
@@ -83,7 +98,7 @@ export default function initAsyncProcess({ config, handler, handleError = consol
         ? getStateDescriptor(process, stateDump.key)
         : process.descriptor;
       const state = newState({ process, key: stateDump.key, descriptor });
-      handler(state);
+      callStateHandler(state);
       await state.restore.run(stateDump.data, ...args);
       return state;
     }

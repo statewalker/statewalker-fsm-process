@@ -1,27 +1,31 @@
 import expect from 'expect.js';
 import initAsyncProcess from "../src/initAsyncProcess.js";
-import combineHandlers from '../src/combineHandlers.js';
+import { useInit, useDone } from "../src/hooks.js";
+import { initPrinter } from "../src/hooks.printer.js";
+
 import newProcessLogger from "../src/newProcessLogger.js";
-import attachStatePrinter from "../src/attachStatePrinter.js";;
 
 import config from "./productCatalogStatechart.js";
 
-describe('combineHandlers', () => {
+describe('handlers.js', () => {
 
   function newPrintChecker() {
     const lines = [];
-    return [lines, (...control) => expect(lines.map(items => items.join(''))).to.eql(control)];
+    return [(...args) => lines.push(args), (...control) => expect(lines.map(items => items.join(''))).to.eql(control)];
   }
 
-  it(`should combine independent handlers`, async () => {
-    const [lines, checkLines] = newPrintChecker();
+  it(`array of handlers`, async () => {
+    const [print, checkLines] = newPrintChecker();
 
-    const handler = combineHandlers(
-      attachStatePrinter({ print: (...args) => lines.push(args), lineNumbers : true }),
-      newProcessLogger({ prefix: "A:" }),
-      newProcessLogger({ prefix: "B:" })
-    );
-    const process = initAsyncProcess({ config, handler, handleError: console.error });
+    const process = initAsyncProcess({
+      config,
+      initialize : initPrinter({ print, lineNumbers : true }),
+      handler : [
+        newProcessLogger({ prefix: "A:" }),
+        newProcessLogger({ prefix: "B:" })
+      ],
+      handleError: console.error
+    });
 
     await process.next({ key: "start" });
     checkLines(
@@ -49,6 +53,40 @@ describe('combineHandlers', () => {
       '[12]  B:<ProductBasket event="showBasket">',
       '[13]    A:<ShowSelectedProducts event="showBasket">',
       '[14]    B:<ShowSelectedProducts event="showBasket">'
+    )
+
+  })
+
+
+  it(`object with individual state handlers `, async () => {
+    const [print, checkLines] = newPrintChecker();
+
+    const process = initAsyncProcess({
+      config,
+      handler : {
+        "App": () => {
+          useInit(() => print('-> App'));
+          useDone(() => print('<- App'));
+        },
+        "ProductList": () => {
+          useInit(() => print('  -> ProductList'));
+          useDone(() => print('  <- ProductList'));
+        },
+      },
+      handleError: console.error
+    });
+
+    await process.next({ key: "start" });
+    checkLines(
+      '-> App',
+      '  -> ProductList'
+    )
+
+    await process.next({ key: "showBasket" });
+    checkLines(
+      '-> App',
+      '  -> ProductList',
+      '  <- ProductList' 
     )
 
   })

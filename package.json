@@ -21,8 +21,9 @@
   "jsdelivr": "dist/index.js",
   "unpkg": "dist/index.js",
   "exports": {
-    "umd": "./dist/index-umd.min.js",
-    "default": "./src/index.js"
+    "." : "./src/index.js",
+    "./hooks" : "./src/hooks.js",
+    "./hooks.printer" : "./src/hooks.printer.js"
   },
   "dependencies": {
     "@statewalker/fsm": "0.15.1"
