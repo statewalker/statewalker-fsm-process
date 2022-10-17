@@ -1,6 +1,6 @@
 {
   "name": "@statewalker/fsm-process",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "FSM-based processes",
   "keywords": [],
   "homepage": "https://github.com/statewalker/statewalker-fsm-process",
@@ -21,9 +21,9 @@
   "jsdelivr": "dist/index.js",
   "unpkg": "dist/index.js",
   "exports": {
-    "." : "./src/index.js",
-    "./hooks" : "./src/hooks.js",
-    "./hooks.printer" : "./src/hooks.printer.js"
+    ".": "./src/index.js",
+    "./hooks": "./src/hooks.js",
+    "./hooks.printer": "./src/hooks.printer.js"
   },
   "dependencies": {
     "@statewalker/fsm": "0.15.1"

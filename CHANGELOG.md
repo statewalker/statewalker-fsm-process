@@ -1,5 +1,11 @@
 # @statewalker/fsm-process
 
+## 0.17.0
+
+### Minor Changes
+
+- Migrate to hook-based state handlers
+
 ## 0.16.0
 
 ### Minor Changes
