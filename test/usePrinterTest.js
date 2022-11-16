@@ -2,7 +2,7 @@ import expect from 'expect.js';
 import { initAsyncProcess } from "../src/index.js";
 import config from "./productCatalogStatechart.js";
 import { usePrinter, initPrinter } from "../src/hooks.printer.js";
-import { useInit, useEventKey, useStateKey } from '../src/hooks.js';
+import { onActivate, useEventKey, useStateKey } from '../src/hooks.js';
 
 function newPrintChecker() {
   const lines = [];
@@ -20,7 +20,7 @@ describe('initPrinter', () => {
       handler : () => {
         const print = usePrinter();
         const getEventKey = useEventKey();
-        useInit(({ key }) => print('* ', key, ': ', getEventKey()));
+        onActivate(({ key }) => print('* ', key, ': ', getEventKey()));
         expect(typeof print).to.be("function");
       },
       handleError: (e) => error = e
@@ -82,7 +82,7 @@ describe('initPrinter', () => {
         const print = usePrinter();
         const getEventKey = useEventKey();
         const stateKey = useStateKey();
-        useInit(() => print('* ', stateKey, ': ', getEventKey()))
+        onActivate(() => print('* ', stateKey, ': ', getEventKey()))
         expect(typeof print).to.be("function");
       },
       handleError: (e) => error = e

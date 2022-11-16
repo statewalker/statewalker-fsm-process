@@ -1,6 +1,6 @@
 import expect from 'expect.js';
 import initAsyncProcess from "../src/initAsyncProcess.js";
-import { useInit, useDone } from "../src/hooks.js";
+import { onActivate, onDeactivate } from "../src/hooks.js";
 import { initPrinter } from "../src/hooks.printer.js";
 
 import newProcessLogger from "../src/newProcessLogger.js";
@@ -65,12 +65,12 @@ describe('handlers.js', () => {
       config,
       handler : {
         "App": () => {
-          useInit(() => print('-> App'));
-          useDone(() => print('<- App'));
+          onActivate(() => print('-> App'));
+          onDeactivate(() => print('<- App'));
         },
         "ProductList": () => {
-          useInit(() => print('  -> ProductList'));
-          useDone(() => print('  <- ProductList'));
+          onActivate(() => print('  -> ProductList'));
+          onDeactivate(() => print('  <- ProductList'));
         },
       },
       handleError: console.error

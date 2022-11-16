@@ -12,12 +12,16 @@ export function withState(action) {
 export function useStateKey() {
   return withState(state => state.key);
 }
-export function useInit(action) {
+export function onActivate(action) {
   return withState(state => state.init(action));
 }
-export function useDone(action) {
+export const useInit = onActivate;
+
+export function onDeactivate(action) {
   return withState(state => state.done(action));
 }
+export const useDone = onDeactivate;
+
 export function useProcess() {
   return useState().process;
 }
@@ -28,7 +32,7 @@ export function withProcess(action) {
 export function initProcess(action) {
   let initialized = false;
   return () => {
-    if(!initialized) {
+    if (!initialized) {
       initialized = true;
       withProcess(action);
     }

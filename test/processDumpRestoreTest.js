@@ -2,7 +2,7 @@ import expect from 'expect.js';
 import initAsyncProcess from "../src/initAsyncProcess.js";
 import newProcessLogger from "../src/newProcessLogger.js"
 import { initPrinter, usePrinter, getProcessPrint } from "../src/hooks.printer.js";
-import { useDump, useRestore, useInit, useStateKey } from '../src/hooks.js';
+import { useDump, useRestore, onActivate, useStateKey } from '../src/hooks.js';
 
 describe('dump/restore: process is dumped and restored at each step', () => {
 
@@ -57,7 +57,7 @@ describe('dump/restore: process is dumped and restored at each step', () => {
         {
           'HandleError': () => {
             const print = usePrinter();
-            useInit(() => print('HANDLE ERROR'))
+            onActivate(() => print('HANDLE ERROR'))
           }
         },
       ],

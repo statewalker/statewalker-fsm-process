@@ -1,7 +1,7 @@
 import expect from 'expect.js';
 import { initAsyncProcess } from "../src/index.js";
 import config from "./productCatalogStatechart.js";
-import { useInit, useDone } from "../src/hooks.js";
+import { onActivate, onDeactivate } from "../src/hooks.js";
 
 describe('hooks.js', () => {
 
@@ -10,7 +10,7 @@ describe('hooks.js', () => {
     return [(...args) => lines.push(args.join('')), (...control) => expect(lines).to.eql(control)];
   }
 
-  it(`useInit registration methods should throw exceptions when called directly`, async () => {
+  it(`onActivate registration methods should throw exceptions when called directly`, async () => {
     function checkDirectCalls(method) {
       let error;
       try {
@@ -20,23 +20,23 @@ describe('hooks.js', () => {
       }
       expect(error instanceof Error).to.be(true)
     }
-    checkDirectCalls(useInit);
-    checkDirectCalls(useDone);
+    checkDirectCalls(onActivate);
+    checkDirectCalls(onDeactivate);
   })
 
-  it(`should properly invoke callbacks registered with the useInit/useDone methods`, async () => {
+  it(`should properly invoke callbacks registered with the onActivate/onDeactivate methods`, async () => {
     const [print, checkLines] = newPrintChecker();
 
     const process = initAsyncProcess({
       config,
       handler : {
         "App": () => {
-          useInit(() => print('-> App'));
-          useDone(() => print('<- App'));
+          onActivate(() => print('-> App'));
+          onDeactivate(() => print('<- App'));
         },
         "ProductList": () => {
-          useInit(() => print('  -> ProductList'));
-          useDone(() => print('  <- ProductList'));
+          onActivate(() => print('  -> ProductList'));
+          onDeactivate(() => print('  <- ProductList'));
         },
       },
       handleError: console.error
