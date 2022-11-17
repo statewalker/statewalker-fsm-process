@@ -21,9 +21,8 @@
   "jsdelivr": "dist/index.js",
   "unpkg": "dist/index.js",
   "exports": {
-    ".": "./src/index.js",
-    "./hooks": "./src/hooks.js",
-    "./hooks.printer": "./src/hooks.printer.js"
+    "umd": "./dist/index-umd.min.js",
+    "default": "./src/index.js"
   },
   "dependencies": {
     "@statewalker/fsm": "0.15.1"
@@ -33,7 +32,7 @@
     "eslint": "^8",
     "expect.js": "^0.3",
     "mocha": "^10",
-    "rollup": "^2"
+    "rollup": "^3"
   },
   "repository": {
     "type": "git",
