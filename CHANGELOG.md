@@ -1,5 +1,12 @@
 # @statewalker/fsm-process
 
+## 0.17.2
+
+### Patch Changes
+
+- Updated dependencies
+  - @statewalker/fsm@0.16.0
+
 ## 0.17.1
 
 ### Patch Changes
