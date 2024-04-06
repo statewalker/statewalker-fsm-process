@@ -54,11 +54,11 @@ describe("dump/restore: process is dumped and restored at each step", () => {
         () => {
           const stateKey = useStateKey();
           useDump((data) => {
-            dumped.push(`${stateKey}:${stepId}`);
+            dumped.push("${stateKey}:${stepId}");
             data.stepId = stepId;
           });
           useRestore((dump) => {
-            restored.push(`${stateKey}:${dump.stepId}`);
+            restored.push("${stateKey}:${dump.stepId}");
           });
         },
         {
@@ -77,14 +77,14 @@ describe("dump/restore: process is dumped and restored at each step", () => {
       const event = events[i];
       process.dispatch(event);
       await process.running;
-      processPrint(`step ${++stepId}`);
+      processPrint("step ${++stepId}");
     }
     dump = await process.dump();
     // console.log(dump)
   }
 
   let control = [];
-  it(`process starts and runs while event is defined`, async () => {
+  it("process starts and runs while event is defined", async () => {
     expect(dumped).toEqual([]);
     expect(restored).toEqual([]);
     await run("");
@@ -102,7 +102,7 @@ describe("dump/restore: process is dumped and restored at each step", () => {
     restored = [];
   });
 
-  it(`continue the process and stop at the embedded wait state cleaning events`, async () => {
+  it("continue the process and stop at the embedded wait state cleaning events", async () => {
     await run("select");
     control.push(
       '  </Wait> <!-- event="select" -->',
@@ -117,7 +117,7 @@ describe("dump/restore: process is dumped and restored at each step", () => {
     restored = [];
   });
 
-  it(`the same event triggers an internal transition between sub-states`, async () => {
+  it("the same event triggers an internal transition between sub-states", async () => {
     await run("select", "");
     control.push(
       '    </Wait> <!-- event="select" -->',
@@ -135,7 +135,7 @@ describe("dump/restore: process is dumped and restored at each step", () => {
     restored = [];
   });
 
-  it(`an event not defined in the sub-state moves the process to the parent state`, async () => {
+  it("an event not defined in the sub-state moves the process to the parent state", async () => {
     await run("reset");
     control.push(
       '    </Wait> <!-- event="reset" -->',
@@ -150,7 +150,7 @@ describe("dump/restore: process is dumped and restored at each step", () => {
     restored = [];
   });
 
-  it(`check error handling`, async () => {
+  it("check error handling", async () => {
     await run("error");
     control.push(
       '  </Wait> <!-- event="error" -->',
@@ -165,7 +165,7 @@ describe("dump/restore: process is dumped and restored at each step", () => {
     restored = [];
   });
 
-  it(`go to the internal wait state`, async () => {
+  it("go to the internal wait state", async () => {
     await run("");
     control.push(
       '  </HandleError> <!-- event="" -->',
@@ -180,7 +180,7 @@ describe("dump/restore: process is dumped and restored at each step", () => {
     restored = [];
   });
 
-  it(`check events handling not available in the transition descriptions`, async () => {
+  it("check events handling not available in the transition descriptions", async () => {
     await run("toto");
     control.push(
       '  </Wait> <!-- event="toto" -->',
@@ -195,7 +195,7 @@ describe("dump/restore: process is dumped and restored at each step", () => {
     restored = [];
   });
 
-  it(`finalize process`, async () => {
+  it("finalize process", async () => {
     await run("exit");
     control.push(
       '  </Wait> <!-- event="exit" -->',

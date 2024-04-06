@@ -14,7 +14,7 @@ function newPrintChecker() {
 }
 
 describe("initPrinter", () => {
-  it(`should allow to re-define the print method`, async () => {
+  it("should allow to re-define the print method", async () => {
     const [lines, checkLines] = newPrintChecker();
     let error;
     const process = initAsyncProcess({
@@ -72,7 +72,7 @@ describe("initPrinter", () => {
     );
   });
 
-  it(`should track transitions between states`, async () => {
+  it("should track transitions between states", async () => {
     const [lines, checkLines] = newPrintChecker();
 
     let error;

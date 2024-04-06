@@ -14,7 +14,7 @@ describe("newProcessLogger", () => {
     ];
   }
 
-  it(`should track transitions between states`, async () => {
+  it("should track transitions between states", async () => {
     const [lines, checkLines] = newPrintChecker();
 
     const process = initAsyncProcess({
@@ -79,7 +79,7 @@ describe("newProcessLogger", () => {
     );
   });
 
-  it(`should be able to add a prefix to all lines`, async () => {
+  it("should be able to add a prefix to all lines", async () => {
     const [lines, checkLines] = newPrintChecker();
     const process = initAsyncProcess({
       config,

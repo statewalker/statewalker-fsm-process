@@ -12,7 +12,7 @@ describe("hooks.js", () => {
     ];
   }
 
-  it(`onActivate registration methods should throw exceptions when called directly`, async () => {
+  it("onActivate registration methods should throw exceptions when called directly", async () => {
     function checkDirectCalls(method) {
       let error;
       try {
@@ -26,7 +26,7 @@ describe("hooks.js", () => {
     checkDirectCalls(onDeactivate);
   });
 
-  it(`should properly invoke callbacks registered with the onActivate/onDeactivate methods`, async () => {
+  it("should properly invoke callbacks registered with the onActivate/onDeactivate methods", async () => {
     const [print, checkLines] = newPrintChecker();
 
     const process = initAsyncProcess({
