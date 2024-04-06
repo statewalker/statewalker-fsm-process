@@ -5,7 +5,7 @@ export default {
     ["ProductCatalog", "showBasket", "ProductBasket"],
     ["ProductCatalog", "removeFromBasket", "ProductBasket"],
     ["ProductCatalog", "addToBasket", "ProductBasket"],
-    ["ProductBasket", "back", "ProductCatalog"]
+    ["ProductBasket", "back", "ProductCatalog"],
   ],
   states: [
     {
@@ -13,8 +13,8 @@ export default {
       transitions: [
         ["", "*", "ProductList"],
         ["ProductList", "showDetails", "ProductView"],
-        ["ProductView", "back", "ProductList"]
-      ]
+        ["ProductView", "back", "ProductList"],
+      ],
     },
     {
       key: "ProductBasket",
@@ -29,8 +29,8 @@ export default {
         ["ProductView", "addToBasket", "HandleBasketUpdate"],
         ["ProductView", "removeFromBasket", "HandleBasketUpdate"],
 
-        ["HandleBasketUpdate", "ok", "ShowSelectedProducts"]
-      ]
-    }
-  ]
+        ["HandleBasketUpdate", "ok", "ShowSelectedProducts"],
+      ],
+    },
+  ],
 };

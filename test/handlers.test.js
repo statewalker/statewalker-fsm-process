@@ -1,4 +1,4 @@
-import expect from 'expect.js';
+import { describe, it, expect } from "./deps.js";
 import initAsyncProcess from "../src/initAsyncProcess.js";
 import { onActivate, onDeactivate } from "../src/hooks.js";
 import { initPrinter } from "../src/hooks.printer.js";
@@ -11,7 +11,7 @@ describe('handlers.js', () => {
 
   function newPrintChecker() {
     const lines = [];
-    return [(...args) => lines.push(args), (...control) => expect(lines.map(items => items.join(''))).to.eql(control)];
+    return [(...args) => lines.push(args), (...control) => expect(lines.map(items => items.join(''))).toEqual(control)];
   }
 
   it(`array of handlers`, async () => {

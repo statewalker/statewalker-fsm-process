@@ -1,13 +1,15 @@
-import expect from 'expect.js';
+import { describe, it, expect } from "./deps.js";
 import { initAsyncProcess } from "../src/index.js";
 import config from "./productCatalogStatechart.js";
 import { onActivate, onDeactivate } from "../src/hooks.js";
 
-describe('hooks.js', () => {
-
+describe("hooks.js", () => {
   function newPrintChecker() {
     const lines = [];
-    return [(...args) => lines.push(args.join('')), (...control) => expect(lines).to.eql(control)];
+    return [
+      (...args) => lines.push(args.join("")),
+      (...control) => expect(lines).toEqual(control),
+    ];
   }
 
   it(`onActivate registration methods should throw exceptions when called directly`, async () => {
@@ -15,46 +17,37 @@ describe('hooks.js', () => {
       let error;
       try {
         method(() => {});
-      } catch(e) {
+      } catch (e) {
         error = e;
       }
-      expect(error instanceof Error).to.be(true)
+      expect(error instanceof Error).toBe(true);
     }
     checkDirectCalls(onActivate);
     checkDirectCalls(onDeactivate);
-  })
+  });
 
   it(`should properly invoke callbacks registered with the onActivate/onDeactivate methods`, async () => {
     const [print, checkLines] = newPrintChecker();
 
     const process = initAsyncProcess({
       config,
-      handler : {
-        "App": () => {
-          onActivate(() => print('-> App'));
-          onDeactivate(() => print('<- App'));
+      handler: {
+        App: () => {
+          onActivate(() => print("-> App"));
+          onDeactivate(() => print("<- App"));
         },
-        "ProductList": () => {
-          onActivate(() => print('  -> ProductList'));
-          onDeactivate(() => print('  <- ProductList'));
+        ProductList: () => {
+          onActivate(() => print("  -> ProductList"));
+          onDeactivate(() => print("  <- ProductList"));
         },
       },
-      handleError: console.error
+      handleError: console.error,
     });
 
     await process.next({ key: "start" });
-    checkLines(
-      '-> App',
-      '  -> ProductList'
-    )
+    checkLines("-> App", "  -> ProductList");
 
     await process.next({ key: "showBasket" });
-    checkLines(
-      '-> App',
-      '  -> ProductList',
-      '  <- ProductList' 
-    )
-
-  })
-
+    checkLines("-> App", "  -> ProductList", "  <- ProductList");
+  });
 });
