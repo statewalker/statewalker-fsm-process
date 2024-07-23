@@ -25,7 +25,9 @@
     }
   },
   "dependencies": {
-    "@statewalker/fsm": "0.16.0"
+    "@statewalker/fsm": "*",
+    "@statewalker/services": "*",
+    "@agen/utils": "*"
   },
   "devDependencies": {
     "@statewalker/eslint-config": "*",
