@@ -20,8 +20,9 @@ describe("exposeAction / exposeService", () => {
     services = newServices();
     register(services.close);
   });
-  afterEach(() => {
-    clean?.();
+  afterEach(async () => {
+    await clean?.();
+    // await new Promise((r) => setTimeout(r, 100));
   });
 
   describe("exposeAction", () => {
@@ -51,13 +52,14 @@ describe("exposeAction / exposeService", () => {
             config: [1, 1],
             printer: [1, 1],
           },
-          action: (deps) =>
-            listen(deps, (d) => {
-              if (!d) return;
+          async action(deps) {
+            for await (const d of deps) {
+              if (!d) continue;
               const { printer, config } = d;
               printer(config.message);
               resolve();
-            }),
+            }
+          },
         })
       );
       configProvider({
@@ -104,11 +106,14 @@ describe("exposeAction / exposeService", () => {
           services,
           key: "message",
           service: async function* (deps) {
-            for (let i = 0; i < control.length; i++) {
-              yield control[i];
-              await new Promise((r) => setTimeout(r, 1));
+            for await (const d of deps) {
+              console.log(">>>>>>>>>>>>>>>", d);
+              for (let i = 0; i < control.length; i++) {
+                yield control[i];
+                await new Promise((r) => setTimeout(r, 1));
+              }
+              resolve();
             }
-            resolve();
           },
         })
       );
@@ -149,7 +154,7 @@ describe("exposeAction / exposeService", () => {
             config: [1, 1],
           },
           service: async function* (deps) {
-            for await (const d of deps()) {
+            for await (const d of deps) {
               const config = d?.config;
               if (!config?.message) continue;
               yield config.message.toUpperCase();
@@ -183,17 +188,24 @@ describe("exposeAction / exposeService", () => {
       let [promise, resolve] = newPromise();
       let lines: string[] = [];
 
-      register(
+      let finalized = false;
+      const r = register(
         exposeAction<{ message: string }>({
           services,
           dependencies: {
             message: [1, 1],
           },
-          action: (deps) =>
-            listen(deps, (d) => {
-              if (!d) return;
-              lines.push(d.message);
-            }),
+          action: async (deps) => {
+            (async () => {
+              for await (const d of deps) {
+                if (!d) return;
+                lines.push(d.message);
+              }
+            })();
+            return () => {
+              finalized = true;
+            };
+          },
         })
       );
 
@@ -217,6 +229,10 @@ describe("exposeAction / exposeService", () => {
       );
       await promise;
       expect(lines).toEqual(control);
+      expect(finalized).toBe(false);
+      r();
+      await new Promise((r) => setTimeout(r, 1));
+      expect(finalized).toBe(true);
     });
   });
 
@@ -246,27 +262,29 @@ describe("exposeAction / exposeService", () => {
           notification: [1, 1],
         },
         action: async function (
-          deps: () => AsyncGenerator<{
+          deps: AsyncGenerator<{
             printer: Printer;
             notification: NotificationMessage;
           }>
         ) {
-          for await (let d of deps()) {
+          for await (let d of deps) {
             if (!d) continue;
             const { printer, notification } = d;
-            const { id, data, brand } = notification;
+            const { id, data, brand } = notification || {};
             printer.print(`id="${id}" data="${data}" brand="${brand}"`);
           }
         },
       },
       {
         key: "printer",
-        service: async function* (): AsyncGenerator<Printer> {
-          yield {
-            print: (...messages: string[]) => {
-              messageList.push(messages.join(" "));
-            },
-          };
+        service: async function* (deps): AsyncGenerator<Printer> {
+          for await (const d of deps) {
+            yield {
+              print: (...messages: string[]) => {
+                messageList.push(messages.join(" "));
+              },
+            };
+          }
         },
       },
       {
@@ -275,15 +293,13 @@ describe("exposeAction / exposeService", () => {
           data: [1, 1],
           brand: [1, 1],
         },
-        service: async function* (
-          dependencies
-        ): AsyncGenerator<NotificationMessage> {
-          const deps = dependencies as () => AsyncGenerator<{
+        service: async function* (dependencies) {
+          let id = 0;
+          const deps = dependencies as AsyncGenerator<{
             data: string;
             brand: string;
           }>;
-          let id = 0;
-          for await (const d of deps()) {
+          for await (const d of deps) {
             if (!d) continue;
             const { data, brand } = d;
             yield {
@@ -296,8 +312,10 @@ describe("exposeAction / exposeService", () => {
       },
       {
         key: "brand",
-        service: async function* () {
-          yield "My Company";
+        service: async function* (deps) {
+          for await (const d of deps) {
+            yield "My Company";
+          }
         },
       },
     ];
@@ -338,8 +356,8 @@ describe("exposeAction / exposeService", () => {
             yield dataControl[i];
             await new Promise((r) => setTimeout(r, 1));
           }
+          // r(); // Remove itself from the list of services
           resolve();
-          r(); // Remove itself from the list of services
         },
       })
     );
@@ -350,8 +368,9 @@ describe("exposeAction / exposeService", () => {
 
     await promise;
 
-    r();
-    await new Promise((r) => setTimeout(r, 10));
+    clean();
+
+    // await new Promise((r) => setTimeout(r, 10));
 
     expect(messageList).toEqual([
       'id="0" data="Hello - 0" brand="My Company"',
@@ -367,83 +386,3 @@ describe("exposeAction / exposeService", () => {
     ]);
   });
 });
-
-// function publishService<S = any>(state: FsmState, key: string, service: S) {
-//   const services = getServices(state.process);
-//   let provider: ServiceProvider<S> | undefined;
-//   state.onEnter(() => {
-//     provider = services.newProvider<S>(key);
-//     provider(service);
-//   });
-//   state.onExit(() => provider?.close());
-// }
-
-// async function* useDependencies1<T extends Record<string, any>>(
-//   services: Services,
-//   dependencies?: Record<keyof T, Cardinality>
-// ): AsyncGenerator<T | undefined> {
-//   yield* iterate<T | undefined>((o) => {
-//     return resolveDependencies<T>({
-//       services,
-//       dependencies,
-//       activate: (values: T) => {
-//         o.next(values);
-//       },
-//       update: (values: T) => {
-//         o.next(values);
-//       },
-//       deactivate: () => {
-//         o.complete();
-//       },
-//     });
-//   });
-// }
-
-// function useServices<T extends Record<string, any>>(
-//   state: FsmState,
-//   dependencies: Record<keyof T, Cardinality>,
-//   action: (
-//     dependencies: () => AsyncIterable<T | undefined>
-//   ) => (unknown | (() => void)) | Promise<unknown | (() => void)>
-// ) {
-//   let slot: Slot<T | undefined>;
-//   let close: (() => void) | unknown;
-//   state.onEnter(async () => {
-//     const services = getServices(state.process);
-//     slot = useDependencies(services, dependencies);
-//     close = await action(slot);
-//   });
-//   state.onExit(async () => {
-//     if (typeof close === "function") {
-//       await close();
-//     }
-//     await slot?.observer.complete();
-//   });
-// }
-
-// function exposeServices<S, T extends Record<string, any>>(
-//   state: FsmState,
-//   dependencies: Record<keyof T, Cardinality>,
-//   key: string,
-//   action: (
-//     dependencies: () => AsyncIterable<T | undefined>
-//   ) => AsyncGenerator<S>
-// ) {
-//   useServices(state, dependencies, key, async (deps) => {
-//     (async () => {})();
-//     return;
-//   });
-//   let slot: Slot<T | undefined>;
-//   let close: (() => void) | unknown;
-//   state.onEnter(async () => {
-//     const services = getServices(state.process);
-//     slot = useDependencies(services, dependencies);
-//     close = await action(slot);
-//   });
-//   state.onExit(async () => {
-//     if (typeof close === "function") {
-//       await close();
-//     }
-//     await slot?.observer.complete();
-//   });
-// }

@@ -6,7 +6,9 @@ import {
 
 export type ActionConfig<T> = {
   dependencies?: DependenciesDeclarations<T>;
-  action: (deps: () => AsyncGenerator<T | undefined>) => (() => void) | unknown;
+  action: (
+    deps: AsyncGenerator<T | undefined>
+  ) => (() => unknown) | unknown | Promise<unknown | (() => unknown)>;
 };
 export function exposeAction<T extends Record<string, any>>({
   services,
@@ -15,10 +17,17 @@ export function exposeAction<T extends Record<string, any>>({
 }: ActionConfig<T> & {
   services: Services;
 }): () => void {
-  const deps = useDependencies<T>({
+  const deps = useDependencies({
     services,
     dependencies,
   });
-  const close = action(deps);
-  return (typeof close === "function" ? close : () => {}) as () => void;
+  const promise = Promise.resolve().then(() => action(deps()));
+  return () => {
+    deps.observer.complete();
+    promise.then((close) => {
+      if (typeof close === "function") {
+        close();
+      }
+    });
+  };
 }
