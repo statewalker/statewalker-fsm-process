@@ -53,7 +53,7 @@ describe("exposeAction / exposeService", () => {
             printer: [1, 1],
           },
           async action(deps) {
-            for await (const d of deps) {
+            for await (const d of deps()) {
               if (!d) continue;
               const { printer, config } = d;
               printer(config.message);
@@ -106,8 +106,7 @@ describe("exposeAction / exposeService", () => {
           services,
           key: "message",
           service: async function* (deps) {
-            for await (const d of deps) {
-              console.log(">>>>>>>>>>>>>>>", d);
+            for await (const d of deps()) {
               for (let i = 0; i < control.length; i++) {
                 yield control[i];
                 await new Promise((r) => setTimeout(r, 1));
@@ -154,7 +153,7 @@ describe("exposeAction / exposeService", () => {
             config: [1, 1],
           },
           service: async function* (deps) {
-            for await (const d of deps) {
+            for await (const d of deps()) {
               const config = d?.config;
               if (!config?.message) continue;
               yield config.message.toUpperCase();
@@ -197,7 +196,7 @@ describe("exposeAction / exposeService", () => {
           },
           action: async (deps) => {
             (async () => {
-              for await (const d of deps) {
+              for await (const d of deps()) {
                 if (!d) return;
                 lines.push(d.message);
               }
@@ -262,12 +261,12 @@ describe("exposeAction / exposeService", () => {
           notification: [1, 1],
         },
         action: async function (
-          deps: AsyncGenerator<{
+          deps: () => AsyncGenerator<{
             printer: Printer;
             notification: NotificationMessage;
           }>
         ) {
-          for await (let d of deps) {
+          for await (let d of deps()) {
             if (!d) continue;
             const { printer, notification } = d;
             const { id, data, brand } = notification || {};
@@ -278,7 +277,7 @@ describe("exposeAction / exposeService", () => {
       {
         key: "printer",
         service: async function* (deps): AsyncGenerator<Printer> {
-          for await (const d of deps) {
+          for await (const d of deps()) {
             yield {
               print: (...messages: string[]) => {
                 messageList.push(messages.join(" "));
@@ -293,15 +292,18 @@ describe("exposeAction / exposeService", () => {
           data: [1, 1],
           brand: [1, 1],
         },
-        service: async function* (dependencies) {
+        service: async function* (deps) {
           let id = 0;
-          const deps = dependencies as AsyncGenerator<{
-            data: string;
-            brand: string;
-          }>;
-          for await (const d of deps) {
+          // const deps = dependencies as () => AsyncGenerator<{
+          //   data: string;
+          //   brand: string;
+          // }>;
+          for await (const d of deps()) {
             if (!d) continue;
-            const { data, brand } = d;
+            const { data, brand } = d as {
+              data: string;
+              brand: string;
+            };
             yield {
               id: id++,
               data,
@@ -313,7 +315,7 @@ describe("exposeAction / exposeService", () => {
       {
         key: "brand",
         service: async function* (deps) {
-          for await (const d of deps) {
+          for await (const d of deps()) {
             yield "My Company";
           }
         },

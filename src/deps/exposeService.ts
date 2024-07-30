@@ -7,7 +7,7 @@ export type ServiceConfig<S, T extends Record<string, any> = {}> = {
   key: string;
   dependencies?: DependenciesDeclarations<T>;
   service: (
-    deps: AsyncGenerator<T | undefined>
+    deps: () => AsyncGenerator<T | undefined>
   ) => AsyncIterable<S | undefined>;
 };
 export function exposeService<S, T extends Record<string, any> = {}>({

@@ -7,7 +7,7 @@ import {
 export type ActionConfig<T> = {
   dependencies?: DependenciesDeclarations<T>;
   action: (
-    deps: AsyncGenerator<T | undefined>
+    deps: () => AsyncGenerator<T | undefined>
   ) => (() => unknown) | unknown | Promise<unknown | (() => unknown)>;
 };
 export function exposeAction<T extends Record<string, any>>({
@@ -17,11 +17,11 @@ export function exposeAction<T extends Record<string, any>>({
 }: ActionConfig<T> & {
   services: Services;
 }): () => void {
-  const deps = useDependencies({
+  const deps = useDependencies<T>({
     services,
     dependencies,
   });
-  const promise = Promise.resolve().then(() => action(deps()));
+  const promise = Promise.resolve().then(() => action(deps));
   return () => {
     deps.observer.complete();
     promise.then((close) => {
