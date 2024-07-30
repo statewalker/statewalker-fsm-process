@@ -25,9 +25,9 @@
     }
   },
   "dependencies": {
+    "@agen/utils": "*",
     "@statewalker/fsm": "*",
-    "@statewalker/services": "*",
-    "@agen/utils": "*"
+    "@statewalker/services": "*"
   },
   "devDependencies": {
     "@statewalker/eslint-config": "*",
