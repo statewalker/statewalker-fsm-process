@@ -1,0 +1,48 @@
+import type { StageHandler } from "@statewalker/fsm";
+import { startFsmProcess } from "@statewalker/fsm";
+import type { FsmStateConfig } from "@statewalker/fsm-validator";
+import type { ExecutionContext, HandlerMap } from "./context.ts";
+import { setConfig } from "./context.ts";
+import { createDefaultAiHandler, createHandlerLoader } from "./handlers.ts";
+
+export async function run(options: {
+  config: FsmStateConfig;
+  context: ExecutionContext;
+  handlers: HandlerMap<ExecutionContext>;
+  extraHandlers?: StageHandler<ExecutionContext>[];
+}): Promise<{ terminate: () => Promise<void>; done: Promise<void> }> {
+  const { config, context, handlers, extraHandlers = [] } = options;
+
+  setConfig(context, config);
+
+  const defaultHandler = createDefaultAiHandler();
+  const appLoader = createHandlerLoader(config, handlers, defaultHandler);
+
+  let resolveDone: () => void;
+  const done = new Promise<void>((r) => {
+    resolveDone = r;
+  });
+
+  const load = (
+    state: string,
+    event: string | undefined,
+  ): StageHandler<ExecutionContext>[] => {
+    const appHandlers = appLoader(state, event);
+    const all = [...extraHandlers, ...appHandlers];
+
+    if (state === config.key) {
+      const rootHandler: StageHandler<ExecutionContext> = () => {
+        return () => {
+          resolveDone?.();
+        };
+      };
+      return [rootHandler, ...all];
+    }
+
+    return all;
+  };
+
+  const terminate = await startFsmProcess(context, config, load);
+
+  return { terminate, done };
+}
