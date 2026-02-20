@@ -1,0 +1,170 @@
+key: DevStory
+description: Execute a story by implementing tasks sequentially using red-green-refactor, writing tests, validating, and updating the story file
+outcome: All story tasks implemented, tested, and story marked ready for review
+actors: [Developer]
+object: Story file
+transitions:
+  - ["", "*", "LoadStory"]
+  - ["LoadStory", "storyReady", "ExecuteTasks"]
+  - ["LoadStory", "noStoryAvailable", ""]
+  - ["ExecuteTasks", "allTasksComplete", "CompleteStory"]
+  - ["ExecuteTasks", "blocked", ""]
+  - ["CompleteStory", "storyReadyForReview", ""]
+  - ["CompleteStory", "dodFailed", ""]
+states:
+
+  # ── Phase 1: Discover story, load context, prepare for execution ──────
+
+  - key: LoadStory
+    description: Discover the next ready-for-dev story from sprint status or user input, load project context, detect if resuming after code review, and mark story as in-progress
+    outcome: Story file parsed, project context loaded, sprint status updated to in-progress
+    events:
+      storyReady: When story file is loaded, context is available, and sprint status is updated
+      noStoryAvailable: When no story with ready-for-dev status can be found and user chooses to halt
+    transitions:
+      - ["", "*", "DiscoverStory"]
+      - ["DiscoverStory", "storyFound", "LoadContext"]
+      - ["DiscoverStory", "noStoryAvailable", ""]
+      - ["LoadContext", "contextLoaded", "DetectContinuation"]
+      - ["DetectContinuation", "continuationAssessed", "MarkInProgress"]
+      - ["MarkInProgress", "storyReady", ""]
+    states:
+      - key: DiscoverStory
+        description: Find the next story with ready-for-dev status — check sprint-status.yaml first, then scan implementation artifacts, or accept a user-provided path
+        outcome: Story file path identified and story file content read completely
+        events:
+          storyFound: When a ready-for-dev story is located in sprint status, artifact files, or provided by the user
+          noStoryAvailable: When no ready-for-dev stories exist and the user chooses to run a different workflow
+      - key: LoadContext
+        description: Load project-context.md for coding standards, parse story sections (acceptance criteria, tasks/subtasks, dev notes, file list, change log)
+        outcome: All project context and story structure available for implementation decisions
+        events:
+          contextLoaded: When project context and all story sections are parsed and available
+      - key: DetectContinuation
+        description: Check if a Senior Developer Review section exists in the story file to determine fresh start vs. post-review resume with pending items
+        outcome: Continuation mode determined — fresh start or review continuation with pending items catalogued
+        events:
+          continuationAssessed: When continuation mode is determined and any pending review follow-up items are identified
+      - key: MarkInProgress
+        description: Update the story entry in sprint-status.yaml from ready-for-dev to in-progress
+        outcome: Sprint status reflects the story is being actively developed
+        events:
+          storyReady: When sprint status is updated and the first incomplete task is identified
+
+  # ── Phase 2: Per-task execution loop ──────────────────────────────────
+
+  - key: ExecuteTasks
+    description: Execute each task from the story file in strict order — implement with red-green-refactor, author comprehensive tests, run validations, mark complete, then repeat for the next task
+    outcome: All tasks and subtasks marked complete with passing tests and updated documentation
+    events:
+      allTasksComplete: When every task and subtask in the story file is marked complete with all tests passing
+      blocked: When implementation fails after 3 consecutive attempts, unapproved dependencies are needed, or required configuration is missing
+    transitions:
+      - ["", "*", "ImplementTask"]
+      - ["ImplementTask", "codeImplemented", "AuthorTests"]
+      - ["ImplementTask", "blocked", ""]
+      - ["AuthorTests", "testsAuthored", "RunValidations"]
+      - ["RunValidations", "allTestsPassed", "MarkTaskComplete"]
+      - ["RunValidations", "testsFailed", "ImplementTask"]
+      - ["MarkTaskComplete", "moreTasksRemain", "ImplementTask"]
+      - ["MarkTaskComplete", "allTasksComplete", ""]
+      - ["MarkTaskComplete", "validationFailed", "ImplementTask"]
+    states:
+      - key: ImplementTask
+        description: Implement the current task/subtask using the red-green-refactor cycle — write failing tests first (RED), implement minimal code to pass (GREEN), then improve structure (REFACTOR)
+        outcome: Current task functionality implemented with initial TDD tests passing and clean code structure
+        events:
+          codeImplemented: When red-green-refactor cycle completes with clean code and passing tests
+          blocked: When 3 consecutive implementation failures occur, unapproved dependencies are needed, or required configuration is missing
+        transitions:
+          - ["", "*", "WriteFailingTests"]
+          - ["WriteFailingTests", "testsFailing", "ImplementCode"]
+          - ["ImplementCode", "testsPassing", "RefactorCode"]
+          - ["ImplementCode", "blocked", ""]
+          - ["RefactorCode", "codeClean", ""]
+        states:
+          - key: WriteFailingTests
+            description: Write tests that define the expected behavior for the current task before any implementation (RED phase of TDD)
+            outcome: Failing tests exist that specify the correct behavior
+            events:
+              testsFailing: When tests are written and confirmed to fail, validating test correctness
+          - key: ImplementCode
+            description: Write minimal code to make the failing tests pass — no extra features beyond what the tests require (GREEN phase of TDD)
+            outcome: All tests pass with the minimum necessary implementation
+            events:
+              testsPassing: When the implementation makes all tests pass
+              blocked: When implementation encounters unresolvable failures after repeated attempts
+          - key: RefactorCode
+            description: Improve code structure, apply architecture patterns and coding standards from dev notes while keeping all tests green (REFACTOR phase of TDD)
+            outcome: Code follows project conventions with all tests still passing
+            events:
+              codeClean: When code is refactored to project standards and all tests remain passing
+
+      - key: AuthorTests
+        description: Author comprehensive tests beyond the TDD cycle — unit tests for business logic, integration tests for component interactions, E2E tests for critical user flows, edge case coverage
+        outcome: Complete test suite covering acceptance criteria, error handling, and edge cases
+        events:
+          testsAuthored: When all required test types are written for the current task
+
+      - key: RunValidations
+        description: Run the full test suite (existing and new tests), linting, and code quality checks to detect regressions and verify correctness
+        outcome: All tests pass and code quality checks are clean
+        events:
+          allTestsPassed: When all tests pass with zero regressions and code quality checks succeed
+          testsFailed: When any test fails, a regression is detected, or code quality checks fail
+
+      - key: MarkTaskComplete
+        description: Verify all validation gates pass, mark the task checkbox [x] in the story file, update the file list with changed files, add completion notes to dev agent record
+        outcome: Task is marked complete in the story file with accurate documentation
+        events:
+          moreTasksRemain: When the task is marked complete and additional incomplete tasks exist in the story
+          allTasksComplete: When the task is marked complete and no more incomplete tasks remain in the story
+          validationFailed: When validation gates fail and the task cannot be marked complete — implementation needs fixes
+
+  # ── Phase 3: Story completion, validation, and handoff ────────────────
+
+  - key: CompleteStory
+    description: Verify all tasks are done, run final regression suite, execute the definition-of-done checklist, update story and sprint status to review, communicate completion to user
+    outcome: Story passes all DoD checks, status set to review, user informed with summary and next steps
+    events:
+      storyReadyForReview: When all DoD checks pass, statuses are updated, and the user has received the completion summary
+      dodFailed: When definition-of-done validation fails at any stage — incomplete tasks, regression failures, or checklist violations
+    transitions:
+      - ["", "*", "VerifyAllTasks"]
+      - ["VerifyAllTasks", "allTasksVerified", "RunFinalRegression"]
+      - ["VerifyAllTasks", "dodFailed", ""]
+      - ["RunFinalRegression", "regressionPassed", "ValidateDefinitionOfDone"]
+      - ["RunFinalRegression", "dodFailed", ""]
+      - ["ValidateDefinitionOfDone", "dodPassed", "UpdateStatus"]
+      - ["ValidateDefinitionOfDone", "dodFailed", ""]
+      - ["UpdateStatus", "statusUpdated", "CommunicateCompletion"]
+      - ["CommunicateCompletion", "storyReadyForReview", ""]
+    states:
+      - key: VerifyAllTasks
+        description: Re-scan story file to confirm every task and subtask is marked [x] and the file list includes all changed files
+        outcome: All tasks verified as complete with accurate file list
+        events:
+          allTasksVerified: When all tasks and subtasks are confirmed marked complete with complete file list
+          dodFailed: When re-scan discovers unmarked tasks, missing subtasks, or incomplete file list entries
+      - key: RunFinalRegression
+        description: Run the full regression test suite across the entire codebase to confirm zero failures
+        outcome: Full test suite passes with no regressions
+        events:
+          regressionPassed: When all regression tests pass successfully
+          dodFailed: When regression test failures are detected during final validation
+      - key: ValidateDefinitionOfDone
+        description: Execute the enhanced DoD checklist — context validation, implementation completeness, test coverage, architecture compliance, documentation tracking, story structure compliance
+        outcome: All definition-of-done criteria satisfied
+        events:
+          dodPassed: When every DoD checklist item passes validation
+          dodFailed: When any DoD checklist item fails — context gaps, missing tests, documentation issues, or structural violations
+      - key: UpdateStatus
+        description: Set story status to review in the story file and update sprint-status.yaml entry from in-progress to review
+        outcome: Story file and sprint status both reflect the review state
+        events:
+          statusUpdated: When story file status and sprint-status.yaml are both updated to review
+      - key: CommunicateCompletion
+        description: Summarize key accomplishments, files modified, tests added, and suggest next steps — code review workflow, test expansion, or deployment verification
+        outcome: User is informed of completion with actionable next steps
+        events:
+          storyReadyForReview: When the user has received the completion summary and any requested explanations

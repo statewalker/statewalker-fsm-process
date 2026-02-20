@@ -1,8 +1,14 @@
 {
   "name": "@statewalker/fsm-process",
-  "version": "0.17.2",
-  "description": "FSM-based processes",
-  "keywords": [],
+  "version": "0.1.0",
+  "description": "AI-driven HFSM definition, execution, and observation",
+  "keywords": [
+    "fsm",
+    "hfsm",
+    "state-machine",
+    "ai",
+    "process"
+  ],
   "homepage": "https://github.com/statewalker/statewalker-fsm-process",
   "author": {
     "name": "Mikhail Kotelnikov",
@@ -10,9 +16,14 @@
   },
   "license": "MIT",
   "type": "module",
+  "bin": {
+    "fsm-process": "./bin/cli.js"
+  },
   "files": [
+    "bin",
     "dist",
-    "src"
+    "src",
+    "templates"
   ],
   "source": "./src/index.ts",
   "module": "./dist/index.js",
@@ -34,7 +45,13 @@
   },
   "dependencies": {
     "@statewalker/fsm": "workspace:*",
-    "@statewalker/fsm-validator": "workspace:*"
+    "@statewalker/fsm-validator": "workspace:*",
+    "ai": "^4.0.0",
+    "@ai-sdk/anthropic": "^1.0.0",
+    "@ai-sdk/openai": "^1.0.0",
+    "@ai-sdk/google": "^1.0.0",
+    "zod": "^3.23.0",
+    "yaml": "^2.4.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.0",
@@ -56,6 +73,7 @@
     "fix": "pnpm format && biome check . --fix --unsafe",
     "test": "vitest --run",
     "test:watch": "vitest",
+    "test:semantic": "vitest --run --config vitest.semantic.config.ts",
     "prepublish": "pnpm dist"
   },
   "sideEffects": false,
