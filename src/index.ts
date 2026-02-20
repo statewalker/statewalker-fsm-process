@@ -26,6 +26,8 @@ export {
   setParams,
   setResolved,
 } from "./execute/context.ts";
+export type { ExecutionSnapshot } from "./execute/dump.ts";
+export { dump, restore } from "./execute/dump.ts";
 export {
   createDefaultAiHandler,
   createHandlerLoader,
@@ -35,6 +37,7 @@ export { instantiate } from "./execute/instantiate.ts";
 export { run as runExecute } from "./execute/runner.ts";
 export type { Artifact } from "./observe/artifacts.ts";
 export { ArtifactStore } from "./observe/artifacts.ts";
+export { replayChartEvents, toChartData } from "./observe/bridge.ts";
 export { Reporter } from "./observe/reporter.ts";
 export type { ChartEvent, TraceEntry } from "./observe/tracer.ts";
 export { Tracer } from "./observe/tracer.ts";

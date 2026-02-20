@@ -1,0 +1,41 @@
+key: CodeReview
+description: Perform a structured code review on a pull request or changeset, identifying issues, suggesting improvements, and producing a review summary
+outcome: Review report with categorized findings (critical, suggestion, nit), approval recommendation, and actionable feedback
+actors: [Reviewer, AiModel]
+object: Review report
+transitions:
+  - ["", "*", "LoadChanges"]
+  - ["LoadChanges", "changesLoaded", "AnalyzeChanges"]
+  - ["LoadChanges", "noChanges", ""]
+  - ["AnalyzeChanges", "analysisComplete", "ProduceReport"]
+  - ["ProduceReport", "reportReady", ""]
+states:
+  - key: LoadChanges
+    description: Load the diff, file list, and PR description for review
+    outcome: All changed files and context loaded
+    events:
+      changesLoaded: When all file diffs and PR metadata are loaded
+      noChanges: When the changeset is empty or cannot be found
+
+  - key: AnalyzeChanges
+    description: Analyze each changed file for correctness, security, performance, style, and test coverage
+    outcome: All files reviewed with categorized findings
+    events:
+      analysisComplete: When all files have been reviewed
+    transitions:
+      - ["", "*", "ReviewFile"]
+      - ["ReviewFile", "moreFiles", "ReviewFile"]
+      - ["ReviewFile", "allFilesReviewed", ""]
+    states:
+      - key: ReviewFile
+        description: Review a single file for issues across multiple dimensions — correctness, security, performance, readability
+        outcome: File reviewed with findings categorized as critical, suggestion, or nit
+        events:
+          moreFiles: When current file is reviewed and more files remain
+          allFilesReviewed: When all files have been reviewed
+
+  - key: ProduceReport
+    description: Compile findings into a structured review report with approval recommendation
+    outcome: Final review report ready for the PR author
+    events:
+      reportReady: When review report is compiled and approval decision is made

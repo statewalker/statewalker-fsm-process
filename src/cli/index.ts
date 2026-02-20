@@ -9,6 +9,9 @@ export type CliOptions = {
   format?: string;
   artifacts?: boolean;
   export?: string;
+  validateOnly?: boolean;
+  dryRun?: boolean;
+  resume?: string;
   positional: string[];
 };
 
@@ -23,6 +26,9 @@ export function parseCli(args: string[]): CliOptions {
       format: { type: "string", short: "f" },
       artifacts: { type: "boolean" },
       export: { type: "string" },
+      "validate-only": { type: "boolean" },
+      "dry-run": { type: "boolean" },
+      resume: { type: "string" },
     },
     allowPositionals: true,
     strict: true,
@@ -50,6 +56,9 @@ export function parseCli(args: string[]): CliOptions {
     format: values.format,
     artifacts: values.artifacts,
     export: values.export,
+    validateOnly: values["validate-only"],
+    dryRun: values["dry-run"],
+    resume: values.resume,
     positional,
   };
 }

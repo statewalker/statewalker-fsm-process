@@ -1,0 +1,43 @@
+key: DataPipeline
+description: Extract data from a source, transform it according to rules, validate the output, and load it into a destination
+outcome: Data successfully extracted, transformed, validated, and loaded into the target destination
+actors: [DataEngineer, AiModel, Validator]
+object: Dataset
+transitions:
+  - ["", "*", "Extract"]
+  - ["Extract", "dataExtracted", "Transform"]
+  - ["Extract", "extractionFailed", ""]
+  - ["Transform", "dataTransformed", "Validate"]
+  - ["Transform", "transformFailed", ""]
+  - ["Validate", "dataValid", "Load"]
+  - ["Validate", "dataInvalid", "Transform"]
+  - ["Load", "loadComplete", ""]
+  - ["Load", "loadFailed", ""]
+states:
+  - key: Extract
+    description: Connect to the data source and extract raw data according to the specified query or schema
+    outcome: Raw dataset extracted and available for transformation
+    events:
+      dataExtracted: When raw data is successfully extracted from the source
+      extractionFailed: When the source is unreachable, authentication fails, or the query returns an error
+
+  - key: Transform
+    description: Apply transformation rules — mapping, filtering, enrichment, deduplication, and format conversion
+    outcome: Data transformed according to all specified rules
+    events:
+      dataTransformed: When all transformation rules have been applied successfully
+      transformFailed: When a transformation rule fails or produces invalid output
+
+  - key: Validate
+    description: Check transformed data against schema constraints, business rules, and data quality thresholds
+    outcome: Validation report confirming data meets all quality criteria
+    events:
+      dataValid: When data passes all schema constraints, business rules, and quality thresholds
+      dataInvalid: When data fails validation — schema mismatch, business rule violation, or quality below threshold
+
+  - key: Load
+    description: Write validated data to the target destination — database, file system, API, or data warehouse
+    outcome: Data loaded into the destination with confirmation of record counts and integrity
+    events:
+      loadComplete: When all records are loaded and integrity checks pass
+      loadFailed: When the destination rejects data, connectivity fails, or integrity checks fail
