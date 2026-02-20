@@ -33,3 +33,8 @@ export {
 } from "./execute/handlers.ts";
 export { instantiate } from "./execute/instantiate.ts";
 export { run as runExecute } from "./execute/runner.ts";
+export type { Artifact } from "./observe/artifacts.ts";
+export { ArtifactStore } from "./observe/artifacts.ts";
+export { Reporter } from "./observe/reporter.ts";
+export type { ChartEvent, TraceEntry } from "./observe/tracer.ts";
+export { Tracer } from "./observe/tracer.ts";

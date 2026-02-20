@@ -1,6 +1,7 @@
 import type { StageHandler } from "@statewalker/fsm";
 import { startFsmProcess } from "@statewalker/fsm";
 import type { FsmStateConfig } from "@statewalker/fsm-validator";
+import type { Tracer } from "../observe/tracer.ts";
 import type { ExecutionContext, HandlerMap } from "./context.ts";
 import { setConfig } from "./context.ts";
 import { createDefaultAiHandler, createHandlerLoader } from "./handlers.ts";
@@ -10,8 +11,13 @@ export async function run(options: {
   context: ExecutionContext;
   handlers: HandlerMap<ExecutionContext>;
   extraHandlers?: StageHandler<ExecutionContext>[];
-}): Promise<{ terminate: () => Promise<void>; done: Promise<void> }> {
-  const { config, context, handlers, extraHandlers = [] } = options;
+  tracer?: Tracer;
+}): Promise<{
+  terminate: () => Promise<void>;
+  done: Promise<void>;
+  tracer?: Tracer;
+}> {
+  const { config, context, handlers, extraHandlers = [], tracer } = options;
 
   setConfig(context, config);
 
@@ -23,17 +29,23 @@ export async function run(options: {
     resolveDone = r;
   });
 
+  const tracerHandler = tracer?.asHandler<ExecutionContext>();
+
   const load = (
     state: string,
     event: string | undefined,
   ): StageHandler<ExecutionContext>[] => {
+    const prefix: StageHandler<ExecutionContext>[] = [];
+    if (tracerHandler) prefix.push(tracerHandler);
+    prefix.push(...extraHandlers);
+
     const appHandlers = appLoader(state, event);
-    const all = [...extraHandlers, ...appHandlers];
+    const all = [...prefix, ...appHandlers];
 
     if (state === config.key) {
       const rootHandler: StageHandler<ExecutionContext> = () => {
         return () => {
-          resolveDone?.();
+          resolveDone();
         };
       };
       return [rootHandler, ...all];
@@ -44,5 +56,5 @@ export async function run(options: {
 
   const terminate = await startFsmProcess(context, config, load);
 
-  return { terminate, done };
+  return { terminate, done, tracer };
 }
