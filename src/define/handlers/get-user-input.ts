@@ -1,12 +1,8 @@
 import { readFile } from "node:fs/promises";
 import type { StageHandler } from "@statewalker/fsm";
-import { newAdapter } from "../../adapter.ts";
-
-const [getParams] = newAdapter<Record<string, unknown>>("params", () => ({}));
-const [getResolved] = newAdapter<Record<string, unknown>>(
-  "resolved",
-  () => ({}),
-);
+import { getParams } from "../../adapters/params.adapter.ts";
+import { getResolved } from "../../adapters/resolved.adapter.ts";
+import { readStdin } from "../../cli/pipe.ts";
 
 export const getUserInputHandler: StageHandler<Record<string, unknown>> =
   async function* (context) {
@@ -21,16 +17,13 @@ export const getUserInputHandler: StageHandler<Record<string, unknown>> =
     if (input && input !== "-") {
       try {
         description = await readFile(input, "utf-8");
-      } catch {
+      } catch (err) {
+        console.error(`Failed to read input file "${input}":`, err);
         yield "noInput";
         return;
       }
     } else if (input === "-") {
-      const chunks: Buffer[] = [];
-      for await (const chunk of process.stdin) {
-        chunks.push(chunk as Buffer);
-      }
-      description = Buffer.concat(chunks).toString("utf-8");
+      description = (await readStdin()) ?? "";
     } else if (prompt) {
       description = prompt;
     }

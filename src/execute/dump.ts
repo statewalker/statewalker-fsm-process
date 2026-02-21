@@ -1,6 +1,9 @@
 import type { FsmStateConfig } from "@statewalker/fsm-validator";
+import { getConfig, setConfig } from "../adapters/config.adapter.ts";
+import { type ExecutionEvent, getHistory, setHistory } from "../adapters/history.adapter.ts";
+import { getParams, setParams } from "../adapters/params.adapter.ts";
+import { getResolved, setResolved } from "../adapters/resolved.adapter.ts";
 import type { ExecutionContext } from "./context.ts";
-import { getConfig, getHistory, getParams, getResolved } from "./context.ts";
 
 export interface ExecutionSnapshot {
   version: 1;
@@ -29,10 +32,10 @@ export function restore(snapshot: ExecutionSnapshot): {
   context: ExecutionContext;
 } {
   const context: ExecutionContext = {};
-  context.config = snapshot.config;
-  context.params = snapshot.params;
-  context.resolved = snapshot.resolved;
-  context.history = snapshot.history;
+  setConfig(context, snapshot.config);
+  setParams(context, snapshot.params);
+  setResolved(context, snapshot.resolved);
+  setHistory(context, snapshot.history as ExecutionEvent[]);
   if (snapshot.statePath) {
     context["fsm:states"] = snapshot.statePath;
   }

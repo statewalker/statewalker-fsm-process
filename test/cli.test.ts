@@ -62,10 +62,10 @@ describe("parseCli", () => {
 });
 
 describe("parseModelString", () => {
-  it("should default to anthropic:claude-sonnet-4-6", () => {
+  it("should default to google:gemini-2.5-flash", () => {
     const ref = parseModelString();
-    expect(ref.provider).toBe("anthropic");
-    expect(ref.modelId).toBe("claude-sonnet-4-6");
+    expect(ref.provider).toBe("google");
+    expect(ref.modelId).toBe("gemini-2.5-flash");
   });
 
   it("should parse provider:model format", () => {

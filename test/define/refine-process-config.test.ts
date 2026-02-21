@@ -1,7 +1,5 @@
-import {
-  setGenerateObject,
-  setMaxIterations,
-} from "../../src/define/context.ts";
+import { setGenerateObject } from "../../src/adapters/generate-object.adapter.ts";
+import { setMaxIterations } from "../../src/adapters/max-iterations.adapter.ts";
 import { refineProcessConfigHandler } from "../../src/define/handlers/refine-process-config.ts";
 import { describe, expect, it } from "../deps.ts";
 import { lightBulbConfig } from "../fixtures.ts";

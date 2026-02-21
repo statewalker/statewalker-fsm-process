@@ -1,9 +1,7 @@
-import {
-  setConfig,
-  setHistory,
-  setParams,
-  setResolved,
-} from "../../src/execute/context.ts";
+import { setConfig } from "../../src/adapters/config.adapter.ts";
+import { setHistory } from "../../src/adapters/history.adapter.ts";
+import { setParams } from "../../src/adapters/params.adapter.ts";
+import { setResolved } from "../../src/adapters/resolved.adapter.ts";
 import { dump, restore } from "../../src/execute/dump.ts";
 import { describe, expect, it } from "../deps.ts";
 import { lightBulbConfig } from "../fixtures.ts";

@@ -3,12 +3,10 @@ import type { FsmStateConfig } from "@statewalker/fsm-validator";
 import { validate } from "@statewalker/fsm-validator";
 import type { LanguageModelV1 } from "ai";
 import { parse } from "yaml";
-import {
-  type ExecutionContext,
-  setConfig,
-  setModel,
-  setParams,
-} from "./context.ts";
+import { setConfig } from "../adapters/config.adapter.ts";
+import { setModel } from "../adapters/language-model.adapter.ts";
+import { setParams } from "../adapters/params.adapter.ts";
+import type { ExecutionContext } from "./context.ts";
 
 export async function instantiate(options: {
   template: string | FsmStateConfig;

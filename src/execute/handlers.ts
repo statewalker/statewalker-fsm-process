@@ -1,5 +1,9 @@
 import type { StageHandler } from "@statewalker/fsm";
 import type { FsmStateConfig } from "@statewalker/fsm-validator";
+import { getConfig } from "../adapters/config.adapter.ts";
+import { getHistory } from "../adapters/history.adapter.ts";
+import { getModel } from "../adapters/language-model.adapter.ts";
+import { getTracer } from "../adapters/tracer.adapter.ts";
 import type { ExecutionContext, HandlerMap } from "./context.ts";
 
 export function findStateConfig(
@@ -40,7 +44,7 @@ export function createHandlerLoader<
 
 export function createDefaultAiHandler(): StageHandler<ExecutionContext> {
   return async function* (context) {
-    const config = context.config as FsmStateConfig | undefined;
+    const config = getConfig(context);
     const states = context["fsm:states"] as string[] | undefined;
     const stateKey = states?.[states.length - 1];
 
@@ -50,7 +54,7 @@ export function createDefaultAiHandler(): StageHandler<ExecutionContext> {
     if (!stateConfig) return;
 
     // Phase 1: Act — generate text artifact
-    const model = context.model as import("ai").LanguageModelV1 | undefined;
+    const model = getModel(context);
     if (!model) {
       // No model — try to yield first available event
       const events = stateConfig.events;
@@ -74,13 +78,15 @@ export function createDefaultAiHandler(): StageHandler<ExecutionContext> {
       });
 
       // Store artifact
-      const history = (context.history ?? []) as Array<Record<string, unknown>>;
+      const statePath = [...(states ?? [])];
+      const history = getHistory(context);
       history.push({
         timestamp: Date.now(),
         type: "artifact",
-        statePath: [...(states ?? [])],
+        statePath,
         data: actResult.text,
       });
+      getTracer(context)?.artifact(statePath, actResult.text);
 
       // Phase 2: Decide — choose event
       const events = stateConfig.events;
@@ -112,7 +118,8 @@ export function createDefaultAiHandler(): StageHandler<ExecutionContext> {
       } else {
         yield eventNames[0];
       }
-    } catch {
+    } catch (err) {
+      getTracer(context)?.error([...(states ?? [])], err as Error);
       // On error, try to yield an error-like event
       const events = stateConfig.events;
       if (events) {

@@ -1,14 +1,11 @@
 import type { StageHandler } from "@statewalker/fsm";
+import type { ExecutionEvent } from "../adapters/history.adapter.ts";
+import { toChartData } from "./bridge.ts";
 
-export interface TraceEntry {
-  timestamp: number;
+export interface TraceEntry extends ExecutionEvent {
   depth: number;
-  type: "enter" | "exit" | "dispatch" | "artifact" | "error";
-  statePath: string[];
   stateKey: string;
-  event?: string;
   duration?: number;
-  data?: unknown;
 }
 
 export interface ChartEvent {
@@ -104,22 +101,6 @@ export class Tracer {
   }
 
   toChartEvents(): ChartEvent[] {
-    const events: ChartEvent[] = [];
-    for (const entry of this.entries) {
-      if (entry.type === "enter") {
-        events.push({
-          type: "activate",
-          timestamp: entry.timestamp,
-          stateIds: [...entry.statePath],
-        });
-      } else if (entry.type === "exit") {
-        events.push({
-          type: "deactivate",
-          timestamp: entry.timestamp,
-          stateIds: [...entry.statePath],
-        });
-      }
-    }
-    return events;
+    return toChartData(this.entries);
   }
 }

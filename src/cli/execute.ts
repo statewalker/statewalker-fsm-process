@@ -15,8 +15,7 @@ export async function runExecuteCommand(opts: CliOptions): Promise<number> {
       const snapshot = JSON.parse(raw);
       const { config, context } = restore(snapshot);
 
-      const model = resolveModel(opts.model);
-      if (model) context.model = model;
+      context.model = resolveModel(opts.model);
 
       const tracer = new Tracer();
       const { done } = await run({

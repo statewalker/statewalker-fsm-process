@@ -9,7 +9,6 @@ export class Reporter {
   }
 
   printTree(entries: TraceEntry[]): void {
-    const enterStack: { key: string; timestamp: number; depth: number }[] = [];
     const exitDurations = new Map<string, number>();
 
     // First pass: collect exit durations
@@ -49,11 +48,6 @@ export class Reporter {
       }
 
       this.output(`${prefix}${entry.stateKey}${durationStr}${eventStr}`);
-      enterStack.push({
-        key: entry.stateKey,
-        timestamp: entry.timestamp,
-        depth: entry.depth,
-      });
     }
   }
 

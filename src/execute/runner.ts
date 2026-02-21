@@ -1,9 +1,10 @@
 import type { StageHandler } from "@statewalker/fsm";
-import { startFsmProcess } from "@statewalker/fsm";
 import type { FsmStateConfig } from "@statewalker/fsm-validator";
+import { setConfig } from "../adapters/config.adapter.ts";
+import { setTracer } from "../adapters/tracer.adapter.ts";
 import type { Tracer } from "../observe/tracer.ts";
+import { runProcess } from "../run-process.ts";
 import type { ExecutionContext, HandlerMap } from "./context.ts";
-import { setConfig } from "./context.ts";
 import { createDefaultAiHandler, createHandlerLoader } from "./handlers.ts";
 
 export async function run(options: {
@@ -20,41 +21,21 @@ export async function run(options: {
   const { config, context, handlers, extraHandlers = [], tracer } = options;
 
   setConfig(context, config);
+  if (tracer) setTracer(context, tracer);
 
-  const defaultHandler = createDefaultAiHandler();
-  const appLoader = createHandlerLoader(config, handlers, defaultHandler);
-
-  let resolveDone: () => void;
-  const done = new Promise<void>((r) => {
-    resolveDone = r;
-  });
-
+  const appLoader = createHandlerLoader(config, handlers, createDefaultAiHandler());
   const tracerHandler = tracer?.asHandler<ExecutionContext>();
 
-  const load = (
-    state: string,
-    event: string | undefined,
-  ): StageHandler<ExecutionContext>[] => {
-    const prefix: StageHandler<ExecutionContext>[] = [];
-    if (tracerHandler) prefix.push(tracerHandler);
-    prefix.push(...extraHandlers);
+  const result = await runProcess({
+    config,
+    context,
+    load: (state, event) => {
+      const prefix: StageHandler<ExecutionContext>[] = [];
+      if (tracerHandler) prefix.push(tracerHandler);
+      prefix.push(...extraHandlers);
+      return [...prefix, ...appLoader(state, event)];
+    },
+  });
 
-    const appHandlers = appLoader(state, event);
-    const all = [...prefix, ...appHandlers];
-
-    if (state === config.key) {
-      const rootHandler: StageHandler<ExecutionContext> = () => {
-        return () => {
-          resolveDone();
-        };
-      };
-      return [rootHandler, ...all];
-    }
-
-    return all;
-  };
-
-  const terminate = await startFsmProcess(context, config, load);
-
-  return { terminate, done, tracer };
+  return { ...result, tracer };
 }

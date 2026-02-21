@@ -1,13 +1,8 @@
 import { writeFile } from "node:fs/promises";
 import type { StageHandler } from "@statewalker/fsm";
 import { stringify } from "yaml";
-import { newAdapter } from "../../adapter.ts";
-
-const [getParams] = newAdapter<Record<string, unknown>>("params", () => ({}));
-const [getResolved] = newAdapter<Record<string, unknown>>(
-  "resolved",
-  () => ({}),
-);
+import { getParams } from "../../adapters/params.adapter.ts";
+import { getResolved } from "../../adapters/resolved.adapter.ts";
 
 export const serializeConfigHandler: StageHandler<Record<string, unknown>> =
   async function* (context) {

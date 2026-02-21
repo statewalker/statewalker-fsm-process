@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { ArtifactStore } from "../observe/artifacts.ts";
+import { toChartData } from "../observe/bridge.ts";
 import { Reporter } from "../observe/reporter.ts";
 import type { TraceEntry } from "../observe/tracer.ts";
 import type { CliOptions } from "./index.ts";
@@ -53,7 +54,7 @@ export async function runTraceCommand(opts: CliOptions): Promise<number> {
     }
 
     if (opts.export) {
-      const chartEvents = entriesToChartEvents(entries);
+      const chartEvents = toChartData(entries);
       await writeFile(
         opts.export,
         JSON.stringify(chartEvents, null, 2),
@@ -67,30 +68,4 @@ export async function runTraceCommand(opts: CliOptions): Promise<number> {
     console.error("Trace failed:", err);
     return 1;
   }
-}
-
-function entriesToChartEvents(
-  entries: TraceEntry[],
-): Array<{ type: string; timestamp: number; stateIds: string[] }> {
-  const events: Array<{
-    type: string;
-    timestamp: number;
-    stateIds: string[];
-  }> = [];
-  for (const entry of entries) {
-    if (entry.type === "enter") {
-      events.push({
-        type: "activate",
-        timestamp: entry.timestamp,
-        stateIds: [...entry.statePath],
-      });
-    } else if (entry.type === "exit") {
-      events.push({
-        type: "deactivate",
-        timestamp: entry.timestamp,
-        stateIds: [...entry.statePath],
-      });
-    }
-  }
-  return events;
 }

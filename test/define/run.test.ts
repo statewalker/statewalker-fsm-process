@@ -1,4 +1,4 @@
-import { setGenerateObject } from "../../src/define/context.ts";
+import { setGenerateObject } from "../../src/adapters/generate-object.adapter.ts";
 import { runDefine } from "../../src/define/run.ts";
 import { describe, expect, it } from "../deps.ts";
 import { lightBulbConfig } from "../fixtures.ts";
