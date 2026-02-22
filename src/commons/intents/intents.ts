@@ -1,15 +1,30 @@
-/**
- * Intent dispatcher factory.
- *
- * Creates an Intents instance backed by a Map<key, Set<handler>>.
- * When `run()` is called:
- *   1. A deferred-promise Intent object is created
- *   2. Handlers for that key are iterated; first one returning `true` claims it
- *   3. If none handled, the intent is rejected with "Unhandled intent: <key>"
- */
-
 import type { Intent, IntentHandler, Intents } from "./types.ts";
 
+/**
+ * Creates an {@link Intents} dispatcher backed by a `Map<key, Set<handler>>`.
+ *
+ * When {@link Intents.run | run(key, payload)} is called:
+ *   1. A deferred-promise {@link Intent} object is created.
+ *   2. Handlers registered for `key` are iterated; the first one returning
+ *      `true` claims the intent (subsequent handlers are skipped).
+ *   3. If no handler claims, the intent is rejected with
+ *      `"Unhandled intent: <key>"`.
+ *
+ * @returns An {@link Intents} instance with `run` and `addHandler` methods.
+ *
+ * @example
+ * ```ts
+ * const intents = createIntents();
+ *
+ * intents.addHandler<string, number>("word:length", (intent) => {
+ *   intent.resolve(intent.payload.length);
+ *   return true;
+ * });
+ *
+ * const result = intents.run<string, number>("word:length", "hello");
+ * console.log(await result.promise); // 5
+ * ```
+ */
 export function createIntents(): Intents {
   const handlers = new Map<string, Set<IntentHandler>>();
 

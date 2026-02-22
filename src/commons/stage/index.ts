@@ -1,5 +1,19 @@
+/**
+ * Stage — keyed pub/sub registry for model collections.
+ *
+ * A Stage stores published models by key and notifies listeners when models
+ * are added. Listeners registered after models are already published receive
+ * the current snapshot immediately. The Stage instance is auto-created per
+ * context object via an adapter with a lazy factory.
+ *
+ * Consumers interact through {@link newStageSlot} which returns a typed
+ * `[publish, listen]` pair bound to a specific key.
+ *
+ * @module
+ */
 import { newAdapter } from "../adapters/index.ts";
 
+/** @internal */
 class Stage {
 	private _models: Map<string, unknown[]> = new Map();
 	private _listeners: Map<string, Set<(models: unknown[]) => void>> = new Map();
@@ -55,6 +69,30 @@ class Stage {
 
 const [getStage] = newAdapter<Stage>("stage", () => new Stage());
 
+/**
+ * Creates a typed stage slot — a `[publish, listen]` pair for a given key.
+ *
+ * - **publish(context, model)** — adds `model` to the slot and synchronously
+ *   notifies all current listeners with the full model array. Returns an
+ *   `unpublish` function that removes the model.
+ * - **listen(context, callback)** — registers `callback`; if models are already
+ *   published, fires immediately with the current snapshot. Returns an
+ *   `unlisten` function.
+ *
+ * The underlying `Stage` is auto-created per context via adapter factory.
+ *
+ * @template T - The model type stored in this slot.
+ * @param key - Unique key identifying the slot within a Stage.
+ * @returns `[publish, listen]` — typed accessors for the slot.
+ *
+ * @example
+ * ```ts
+ * const [publishView, listenViews] = newStageSlot<ViewDescriptor>("views");
+ * const ctx: Record<string, unknown> = {};
+ * const unpublish = publishView(ctx, myView);
+ * listenViews(ctx, (views) => console.log("views:", views));
+ * ```
+ */
 export function newStageSlot<T>(
 	key: string,
 ): [
