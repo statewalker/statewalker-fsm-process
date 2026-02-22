@@ -18,7 +18,9 @@ export interface Intent<P, R> {
 }
 
 /** Handler returns `true` when it claims the intent. */
-export type IntentHandler<P = unknown, R = unknown> = (intent: Intent<P, R>) => boolean;
+export type IntentHandler<P = unknown, R = unknown> = (
+  intent: Intent<P, R>,
+) => boolean;
 
 /** Global intent dispatcher / handler registry. */
 export interface Intents {
@@ -26,5 +28,8 @@ export interface Intents {
   run<P, R>(key: string, payload: P): Intent<P, R>;
 
   /** Register a handler. Returns unsubscribe function. */
-  addHandler<P = unknown, R = unknown>(key: string, handler: IntentHandler<P, R>): () => void;
+  addHandler<P = unknown, R = unknown>(
+    key: string,
+    handler: IntentHandler<P, R>,
+  ): () => void;
 }

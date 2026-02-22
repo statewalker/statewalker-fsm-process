@@ -21,25 +21,25 @@
  * ```
  */
 export class BaseClass {
-	private _listeners: Set<() => void> = new Set();
+  private _listeners: Set<() => void> = new Set();
 
-	/**
-	 * Registers a listener that is called on every {@link notify}.
-	 *
-	 * @param callback - Function invoked synchronously when the object changes.
-	 * @returns An unsubscribe function that removes the listener.
-	 */
-	onUpdate(callback: () => void): () => void {
-		this._listeners.add(callback);
-		return () => {
-			this._listeners.delete(callback);
-		};
-	}
+  /**
+   * Registers a listener that is called on every {@link notify}.
+   *
+   * @param callback - Function invoked synchronously when the object changes.
+   * @returns An unsubscribe function that removes the listener.
+   */
+  onUpdate(callback: () => void): () => void {
+    this._listeners.add(callback);
+    return () => {
+      this._listeners.delete(callback);
+    };
+  }
 
-	/** Synchronously invokes all registered listeners. */
-	notify(): void {
-		for (const listener of this._listeners) {
-			listener();
-		}
-	}
+  /** Synchronously invokes all registered listeners. */
+  notify(): void {
+    for (const listener of this._listeners) {
+      listener();
+    }
+  }
 }

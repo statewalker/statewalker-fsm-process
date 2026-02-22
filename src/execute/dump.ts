@@ -1,6 +1,10 @@
 import type { FsmStateConfig } from "@statewalker/fsm-validator";
 import { getConfig, setConfig } from "../adapters/config.adapter.ts";
-import { type ExecutionEvent, getHistory, setHistory } from "../adapters/history.adapter.ts";
+import {
+  type ExecutionEvent,
+  getHistory,
+  setHistory,
+} from "../adapters/history.adapter.ts";
 import { getParams, setParams } from "../adapters/params.adapter.ts";
 import { getResolved, setResolved } from "../adapters/resolved.adapter.ts";
 import type { ExecutionContext } from "./context.ts";

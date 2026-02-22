@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createComponentRegistry } from "../../../src/commons-ui/component-registry/index.ts";
 
 class ModelA {

@@ -23,7 +23,11 @@ export async function run(options: {
   setConfig(context, config);
   if (tracer) setTracer(context, tracer);
 
-  const appLoader = createHandlerLoader(config, handlers, createDefaultAiHandler());
+  const appLoader = createHandlerLoader(
+    config,
+    handlers,
+    createDefaultAiHandler(),
+  );
   const tracerHandler = tracer?.asHandler<ExecutionContext>();
 
   const result = await runProcess({

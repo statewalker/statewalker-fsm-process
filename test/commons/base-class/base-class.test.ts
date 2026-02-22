@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { BaseClass } from "../../../src/commons/base-class/index.ts";
 
 describe("BaseClass", () => {

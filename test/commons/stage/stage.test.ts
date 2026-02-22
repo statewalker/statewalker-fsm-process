@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { newStageSlot } from "../../../src/commons/stage/index.ts";
 
 describe("newStageSlot", () => {

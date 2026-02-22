@@ -6,59 +6,59 @@ import { newAdapter } from "./adapters/new-adapter.ts";
 import { getStack } from "./adapters/stack.adapter.ts";
 
 function statesTracer(context: Record<string, unknown>): () => void {
-	const stack = [...getStack(context)];
-	const currentState = stack.pop();
-	const prefix = stack.map(() => "  ").join("");
-	const logger = getLogger(context);
-	logger.log(`${prefix}<${currentState ?? "START"}>`);
-	return () => {
-		const logger = getLogger(context);
-		logger.log(`${prefix}</${currentState ?? "START"}>`);
-	};
+  const stack = [...getStack(context)];
+  const currentState = stack.pop();
+  const prefix = stack.map(() => "  ").join("");
+  const logger = getLogger(context);
+  logger.log(`${prefix}<${currentState ?? "START"}>`);
+  return () => {
+    const logger = getLogger(context);
+    logger.log(`${prefix}</${currentState ?? "START"}>`);
+  };
 }
 
 function newTracker(): [
-	trace: (context: Record<string, unknown>) => () => void,
-	done: Promise<void>,
+  trace: (context: Record<string, unknown>) => () => void,
+  done: Promise<void>,
 ] {
-	const [getStack] = newAdapter<string[]>("fsm:states", () => []);
-	let resolve = () => {};
-	const promise = new Promise<void>((r) => {
-		resolve = r;
-	});
-	return [
-		(context: Record<string, unknown>) => {
-			const stack = getStack(context);
-			return () => {
-				if (stack.length === 1) {
-					resolve();
-				}
-			};
-		},
-		promise,
-	];
+  const [getStack] = newAdapter<string[]>("fsm:states", () => []);
+  let resolve = () => {};
+  const promise = new Promise<void>((r) => {
+    resolve = r;
+  });
+  return [
+    (context: Record<string, unknown>) => {
+      const stack = getStack(context);
+      return () => {
+        if (stack.length === 1) {
+          resolve();
+        }
+      };
+    },
+    promise,
+  ];
 }
 
 export async function runProcess<C extends Record<string, unknown>>(options: {
-	config: FsmStateConfig;
-	context: C;
-	load: (state: string, event: string | undefined) => StageHandler<C>[];
+  config: FsmStateConfig;
+  context: C;
+  load: (state: string, event: string | undefined) => StageHandler<C>[];
 }): Promise<{
-	terminate: () => Promise<void>;
-	done: Promise<void>;
+  terminate: () => Promise<void>;
+  done: Promise<void>;
 }> {
-	const { config, context, load } = options;
+  const { config, context, load } = options;
 
-	const [trace, done] = newTracker();
+  const [trace, done] = newTracker();
 
-	const wrappedLoad = (
-		state: string,
-		event: string | undefined,
-	): StageHandler<C>[] => {
-		const handlers = load(state, event);
-		return [statesTracer, trace, ...handlers];
-	};
+  const wrappedLoad = (
+    state: string,
+    event: string | undefined,
+  ): StageHandler<C>[] => {
+    const handlers = load(state, event);
+    return [statesTracer, trace, ...handlers];
+  };
 
-	const terminate = await startFsmProcess(context, config, wrappedLoad);
-	return { terminate, done };
+  const terminate = await startFsmProcess(context, config, wrappedLoad);
+  return { terminate, done };
 }

@@ -24,28 +24,24 @@
  * ```
  */
 export function createComponentRegistry<R>(): ComponentRegistry<R> {
-	const factories = new Map<Constructor, (model: unknown) => R>();
+  const factories = new Map<Constructor, (model: unknown) => R>();
 
-	function register<T>(
-		modelType: Constructor<T>,
-		factory: (model: T) => R,
-	): void {
-		factories.set(modelType, factory as (model: unknown) => R);
-	}
+  function register<T>(
+    modelType: Constructor<T>,
+    factory: (model: T) => R,
+  ): void {
+    factories.set(modelType, factory as (model: unknown) => R);
+  }
 
-	function resolve(model: object): R {
-		const factory = factories.get(
-			model.constructor as Constructor,
-		);
-		if (!factory) {
-			throw new Error(
-				`No renderer registered for ${model.constructor.name}`,
-			);
-		}
-		return factory(model);
-	}
+  function resolve(model: object): R {
+    const factory = factories.get(model.constructor as Constructor);
+    if (!factory) {
+      throw new Error(`No renderer registered for ${model.constructor.name}`);
+    }
+    return factory(model);
+  }
 
-	return { register, resolve };
+  return { register, resolve };
 }
 
 /** A constructor type used as the registry map key. */
@@ -54,20 +50,20 @@ export type Constructor<T = unknown> = new (...args: any[]) => T;
 
 /** Registry returned by {@link createComponentRegistry}. */
 export interface ComponentRegistry<R> {
-	/**
-	 * Associates a model type with a renderer factory.
-	 *
-	 * @param modelType - Constructor of the model class.
-	 * @param factory - Function that creates a renderer from a model instance.
-	 */
-	register<T>(modelType: Constructor<T>, factory: (model: T) => R): void;
+  /**
+   * Associates a model type with a renderer factory.
+   *
+   * @param modelType - Constructor of the model class.
+   * @param factory - Function that creates a renderer from a model instance.
+   */
+  register<T>(modelType: Constructor<T>, factory: (model: T) => R): void;
 
-	/**
-	 * Looks up the factory for `model.constructor` and calls it.
-	 * Throws if no factory is registered for the model's type.
-	 *
-	 * @param model - The model instance to resolve a renderer for.
-	 * @returns A new renderer produced by the registered factory.
-	 */
-	resolve(model: object): R;
+  /**
+   * Looks up the factory for `model.constructor` and calls it.
+   * Throws if no factory is registered for the model's type.
+   *
+   * @param model - The model instance to resolve a renderer for.
+   * @returns A new renderer produced by the registered factory.
+   */
+  resolve(model: object): R;
 }

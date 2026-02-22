@@ -9,7 +9,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { createIntents } from "../../../src/commons/intents/intents.ts";
 import { newIntent } from "../../../src/commons/intents/new-intent.ts";
-import type { Intent, IntentHandler } from "../../../src/commons/intents/types.ts";
+import type {
+  Intent,
+  IntentHandler,
+} from "../../../src/commons/intents/types.ts";
 
 describe("createIntents", () => {
   it("should resolve when a handler claims the intent", async () => {
@@ -30,7 +33,9 @@ describe("createIntents", () => {
 
     const result = intents.run("test:missing", {});
     expect(result.resolved).toBe(true);
-    await expect(result.promise).rejects.toThrow("Unhandled intent: test:missing");
+    await expect(result.promise).rejects.toThrow(
+      "Unhandled intent: test:missing",
+    );
   });
 
   it("should reject when handlers exist but none claims", async () => {
@@ -63,7 +68,9 @@ describe("createIntents", () => {
     const intents = createIntents();
 
     intents.addHandler<void, string>("test:async", (intent) => {
-      intent.resolve(new Promise((resolve) => setTimeout(() => resolve("delayed"), 10)));
+      intent.resolve(
+        new Promise((resolve) => setTimeout(() => resolve("delayed"), 10)),
+      );
       return true;
     });
 
@@ -75,10 +82,13 @@ describe("createIntents", () => {
   it("should support handler unsubscribe", async () => {
     const intents = createIntents();
 
-    const unsubscribe = intents.addHandler<void, string>("test:unsub", (intent) => {
-      intent.resolve("handled");
-      return true;
-    });
+    const unsubscribe = intents.addHandler<void, string>(
+      "test:unsub",
+      (intent) => {
+        intent.resolve("handled");
+        return true;
+      },
+    );
 
     // First call works
     const result1 = intents.run<void, string>("test:unsub", undefined);
@@ -89,7 +99,9 @@ describe("createIntents", () => {
 
     // Second call should fail — no handler
     const result2 = intents.run<void, string>("test:unsub", undefined);
-    await expect(result2.promise).rejects.toThrow("Unhandled intent: test:unsub");
+    await expect(result2.promise).rejects.toThrow(
+      "Unhandled intent: test:unsub",
+    );
   });
 
   it("should support rejection by handler", async () => {
