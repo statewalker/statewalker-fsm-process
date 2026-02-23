@@ -2,7 +2,7 @@ import type { StageHandler } from "@statewalker/fsm";
 import { startFsmProcess } from "@statewalker/fsm";
 import type { FsmStateConfig } from "@statewalker/fsm-validator";
 import { newAdapter } from "@/commons/adapters/index.ts";
-import { getLogger } from "@/process-common/adapters/logger/index.ts";
+import { getLogger } from "@/commons/logger/index.ts";
 import { getStack } from "@/process-common/adapters/stack/index.ts";
 
 function statesTracer(context: Record<string, unknown>): () => void {
@@ -10,10 +10,10 @@ function statesTracer(context: Record<string, unknown>): () => void {
   const currentState = stack.pop();
   const prefix = stack.map(() => "  ").join("");
   const logger = getLogger(context);
-  logger.log(`${prefix}<${currentState ?? "START"}>`);
+  logger.info(`${prefix}<${currentState ?? "START"}>`);
   return () => {
     const logger = getLogger(context);
-    logger.log(`${prefix}</${currentState ?? "START"}>`);
+    logger.info(`${prefix}</${currentState ?? "START"}>`);
   };
 }
 
