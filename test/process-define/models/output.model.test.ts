@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   getOutputModel,
   OutputModel,
-} from "../../../src/define/models/output.model.ts";
+} from "@/process-define/models/output.model.ts";
 
 describe("OutputModel", () => {
   it("initializes with empty defaults", () => {

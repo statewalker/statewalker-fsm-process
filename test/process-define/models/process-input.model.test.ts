@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   getProcessInputModel,
   ProcessInputModel,
-} from "../../../src/define/models/process-input.model.ts";
+} from "@/process-define/models/process-input.model.ts";
 
 describe("ProcessInputModel", () => {
   it("initializes with empty defaults", () => {

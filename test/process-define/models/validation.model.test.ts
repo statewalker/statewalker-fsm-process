@@ -1,10 +1,10 @@
 import type { ValidationIssue } from "@statewalker/fsm-validator";
 import { describe, expect, it, vi } from "vitest";
-import type { SemanticIssue } from "../../../src/define/models/validation.model.ts";
+import type { SemanticIssue } from "@/process-define/models/validation.model.ts";
 import {
   getValidationModel,
   ValidationModel,
-} from "../../../src/define/models/validation.model.ts";
+} from "@/process-define/models/validation.model.ts";
 
 describe("ValidationModel", () => {
   const structuralIssue: ValidationIssue = {

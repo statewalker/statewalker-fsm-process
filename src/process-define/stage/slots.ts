@@ -1,7 +1,7 @@
 import { newStageSlot } from "@/shared/stage/index.ts";
-import type { OutputModel } from "@/define/models/output.model.ts";
-import type { ProcessConfigModel } from "@/define/models/process-config.model.ts";
-import type { ValidationModel } from "@/define/models/validation.model.ts";
+import type { OutputModel } from "@/process-define/models/output.model.ts";
+import type { ProcessConfigModel } from "@/process-define/models/process-config.model.ts";
+import type { ValidationModel } from "@/process-define/models/validation.model.ts";
 
 export const [publishDefineProgress, listenDefineProgress] =
   newStageSlot<ProcessConfigModel>("define:progress");

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   getProcessConfigModel,
   ProcessConfigModel,
-} from "../../../src/define/models/process-config.model.ts";
+} from "@/process-define/models/process-config.model.ts";
 
 describe("ProcessConfigModel", () => {
   it("initializes with correct defaults", () => {
