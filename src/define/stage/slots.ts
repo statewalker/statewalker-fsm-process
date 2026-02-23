@@ -1,4 +1,4 @@
-import { newStageSlot } from "@/commons/stage/index.ts";
+import { newStageSlot } from "@/shared/stage/index.ts";
 import type { OutputModel } from "@/define/models/output.model.ts";
 import type { ProcessConfigModel } from "@/define/models/process-config.model.ts";
 import type { ValidationModel } from "@/define/models/validation.model.ts";
