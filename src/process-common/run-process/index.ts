@@ -1,9 +1,9 @@
 import type { StageHandler } from "@statewalker/fsm";
 import { startFsmProcess } from "@statewalker/fsm";
 import type { FsmStateConfig } from "@statewalker/fsm-validator";
-import { newAdapter } from "../../commons/adapters/index.ts";
-import { getLogger } from "../adapters/logger/index.ts";
-import { getStack } from "../adapters/stack/index.ts";
+import { newAdapter } from "@/commons/adapters/index.ts";
+import { getLogger } from "@/process-common/adapters/logger/index.ts";
+import { getStack } from "@/process-common/adapters/stack/index.ts";
 
 function statesTracer(context: Record<string, unknown>): () => void {
   const stack = [...getStack(context)];

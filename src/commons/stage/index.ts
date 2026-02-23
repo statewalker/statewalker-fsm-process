@@ -11,7 +11,7 @@
  *
  * @module
  */
-import { newAdapter } from "../adapters/index.ts";
+import { newAdapter } from "@/commons/adapters/index.ts";
 
 /** @internal */
 class Stage {

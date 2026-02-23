@@ -1,4 +1,4 @@
-import { newAdapter } from "../../../commons/adapters/index.ts";
+import { newAdapter } from "@/commons/adapters/index.ts";
 
 export type Logger = {
   log: (...args: unknown[]) => void;
