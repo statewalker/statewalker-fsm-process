@@ -1,4 +1,4 @@
-import { getEventQueue } from "../event-queue/index.ts";
+import { getEventQueue } from "@/process-common/event-queue/index.ts";
 
 export async function* rootBridge(
 	context: Record<string, unknown>,
