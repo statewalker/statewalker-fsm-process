@@ -3,10 +3,10 @@ import { startFsmProcess } from "@statewalker/fsm";
 import type { FsmStateConfig } from "@statewalker/fsm-validator";
 import { newAdapter } from "@/shared/adapters/index.ts";
 import { getLogger } from "@/shared/logger/index.ts";
-import { getStack } from "@/shared-process/adapters/stack/index.ts";
+import { getFsmStack } from "@/shared-process/adapters/index.ts";
 
 function statesTracer(context: Record<string, unknown>): () => void {
-  const stack = [...getStack(context)];
+  const stack = [...getFsmStack(context)];
   const currentState = stack.pop();
   const prefix = stack.map(() => "  ").join("");
   const logger = getLogger(context);

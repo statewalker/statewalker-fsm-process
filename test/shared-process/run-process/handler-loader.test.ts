@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   createHandlerLoader,
   findStateConfig,
-} from "@/shared-process/handler-loader/index.ts";
+} from "@/shared-process/run-process/handler-loader.ts";
 
 const simpleConfig: FsmStateConfig = {
   key: "Root",

@@ -32,7 +32,11 @@ export function newAdapter<
 >(
   key: string,
   create?: (ctx: C) => T,
-): [get: (ctx: C) => T, set: (ctx: C, value: T) => void] {
+): [
+  get: (ctx: C) => T,
+  set: (ctx: C, value: T) => void,
+  remove: (ctx: C) => void,
+] {
   function get(ctx: C): T {
     if (ctx[key] === undefined) {
       if (create) {
@@ -46,5 +50,8 @@ export function newAdapter<
   function set(ctx: C, value: T): void {
     (ctx as Record<string, unknown>)[key] = value;
   }
-  return [get, set];
+  function remove(ctx: C): void {
+    delete (ctx as Record<string, unknown>)[key];
+  }
+  return [get, set, remove];
 }

@@ -1,14 +1,10 @@
 import type { FsmStateConfig } from "@statewalker/fsm-validator";
 import { describe, expect, it } from "vitest";
 import { setLogger } from "@/shared/logger/index.ts";
-import { setConfig } from "@/shared-process/adapters/config/index.ts";
-import {
-  EventQueueModel,
-  setEventQueue,
-} from "@/shared-process/event-queue/index.ts";
-import { createHandlerLoader } from "@/shared-process/handler-loader/index.ts";
-import { rootBridge } from "@/shared-process/root-bridge/index.ts";
-import { runProcess } from "@/shared-process/run-process/index.ts";
+import { setConfig } from "@/shared-process/adapters/config.adapter.ts";
+import { getEvents } from "@/shared-process/adapters/fsm.adapter";
+import { createHandlerLoader } from "@/shared-process/run-process/handler-loader.ts";
+import { runProcess } from "@/shared-process/run-process/run-process.ts";
 
 const toggleConfig: FsmStateConfig = {
   key: "Toggle",
@@ -24,12 +20,18 @@ const toggleConfig: FsmStateConfig = {
   ],
 };
 
-describe("integration: handler emits -> root bridge yields -> FSM transitions", () => {
+async function* eventBridge(
+  context: Record<string, unknown>,
+): AsyncGenerator<string> {
+  const events = getEvents(context);
+  yield* events.readEvents();
+}
+
+describe("integration: handler emits -> event bridge yields -> FSM transitions", () => {
   it("handler emits events that drive FSM through states", async () => {
     const visited: string[] = [];
-    const eq = new EventQueueModel();
     const ctx: Record<string, unknown> = {};
-    setEventQueue(ctx, eq);
+    const events = getEvents(ctx);
     setConfig(ctx, toggleConfig);
     setLogger(ctx, {
       level: "info",
@@ -51,18 +53,18 @@ describe("integration: handler emits -> root bridge yields -> FSM transitions", 
       visited.push(state);
 
       if (state === "Off" && visited.length === 1) {
-        eq.emit("flip");
+        events.emit("flip");
       } else if (state === "On") {
-        eq.emit("flip");
+        events.emit("flip");
       } else {
         // second Off -> stop
-        eq.emit("stop");
+        events.emit("stop");
       }
     };
 
     const load = createHandlerLoader(
       toggleConfig,
-      { Toggle: [rootBridge] },
+      { Toggle: [eventBridge] },
       leafHandler,
     );
 
