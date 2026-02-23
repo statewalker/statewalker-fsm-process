@@ -1,6 +1,6 @@
 import type { FsmStateConfig } from "@statewalker/fsm-validator";
-import { newAdapter } from "@/commons/adapters/index.ts";
-import { BaseClass } from "@/commons/base-class/index.ts";
+import { newAdapter } from "@/shared/adapters/index.ts";
+import { BaseClass } from "@/shared/base-class/index.ts";
 
 export class ProcessConfigModel extends BaseClass {
   config: FsmStateConfig | undefined = undefined;

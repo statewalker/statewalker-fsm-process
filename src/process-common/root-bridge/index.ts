@@ -1,8 +1,0 @@
-import { getEventQueue } from "@/process-common/event-queue/index.ts";
-
-export async function* rootBridge(
-	context: Record<string, unknown>,
-): AsyncGenerator<string> {
-	const events = getEventQueue(context);
-	yield* events.read();
-}
