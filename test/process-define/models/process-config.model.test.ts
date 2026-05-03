@@ -16,7 +16,7 @@ describe("ProcessConfigModel", () => {
   it("startGeneration sets isGenerating and increments iteration", () => {
     const model = new ProcessConfigModel();
     const fn = vi.fn();
-    model.onUpdate(fn);
+    model.autorun(fn);
     const complete = model.startGeneration();
     expect(model.isGenerating).toBe(true);
     expect(model.iteration).toBe(1);
@@ -28,7 +28,7 @@ describe("ProcessConfigModel", () => {
     const model = new ProcessConfigModel();
     const fn = vi.fn();
     const complete = model.startGeneration();
-    model.onUpdate(fn);
+    model.autorun(fn);
     const config = { key: "Root" };
     complete({ config });
     expect(model.isGenerating).toBe(false);

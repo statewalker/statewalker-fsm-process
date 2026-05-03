@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { BaseClass } from "@/shared/base-class/index.ts";
+import { Base } from "@/shared/base-class/index.ts";
 
 describe("BaseClass", () => {
   it("calls subscribers on notify", () => {
     const obj = new BaseClass();
     const fn = vi.fn();
-    obj.onUpdate(fn);
+    obj.autorun(fn);
     obj.notify();
     expect(fn).toHaveBeenCalledOnce();
   });
@@ -13,7 +13,7 @@ describe("BaseClass", () => {
   it("does not call unsubscribed callbacks", () => {
     const obj = new BaseClass();
     const fn = vi.fn();
-    const unsub = obj.onUpdate(fn);
+    const unsub = obj.autorun(fn);
     unsub();
     obj.notify();
     expect(fn).not.toHaveBeenCalled();
@@ -28,8 +28,8 @@ describe("BaseClass", () => {
     const obj = new BaseClass();
     const fn1 = vi.fn();
     const fn2 = vi.fn();
-    obj.onUpdate(fn1);
-    obj.onUpdate(fn2);
+    obj.autorun(fn1);
+    obj.autorun(fn2);
     obj.notify();
     expect(fn1).toHaveBeenCalledOnce();
     expect(fn2).toHaveBeenCalledOnce();
@@ -38,8 +38,8 @@ describe("BaseClass", () => {
   it("subscribing same callback twice creates two subscriptions", () => {
     const obj = new BaseClass();
     const fn = vi.fn();
-    obj.onUpdate(fn);
-    obj.onUpdate(fn);
+    obj.autorun(fn);
+    obj.autorun(fn);
     obj.notify();
     // Set-based: same reference added once, so called once
     expect(fn).toHaveBeenCalledOnce();
@@ -49,8 +49,8 @@ describe("BaseClass", () => {
     const obj = new BaseClass();
     const fn1 = vi.fn();
     const fn2 = vi.fn();
-    const unsub1 = obj.onUpdate(fn1);
-    obj.onUpdate(fn2);
+    const unsub1 = obj.autorun(fn1);
+    obj.autorun(fn2);
     unsub1();
     obj.notify();
     expect(fn1).not.toHaveBeenCalled();

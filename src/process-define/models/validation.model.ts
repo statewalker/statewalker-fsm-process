@@ -1,6 +1,6 @@
 import type { ValidationIssue } from "@statewalker/fsm-validator";
 import { newAdapter } from "@/shared/adapters/index.ts";
-import { BaseClass } from "@/shared/base-class/index.ts";
+import { Base } from "@/shared/base-class/index.ts";
 
 export interface SemanticIssue {
   type: string;
@@ -10,16 +10,18 @@ export interface SemanticIssue {
   suggestion: string;
 }
 
-export class ValidationModel extends BaseClass {
+export class ValidationModel extends Base {
   structuralIssues: ValidationIssue[] = [];
   semanticIssues: SemanticIssue[] = [];
   isValid = false;
 
   update(structural: ValidationIssue[], semantic: SemanticIssue[]): void {
-    this.structuralIssues = structural;
-    this.semanticIssues = semantic;
-    this.isValid = structural.length === 0 && semantic.length === 0;
-    this.notify();
+    return this.update(() => {
+      this.structuralIssues = structural;
+      this.semanticIssues = semantic;
+      this.isValid = structural.length === 0 && semantic.length === 0;
+    
+    });
   }
 }
 

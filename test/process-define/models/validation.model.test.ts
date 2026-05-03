@@ -32,7 +32,7 @@ describe("ValidationModel", () => {
   it("update with no issues sets isValid to true", () => {
     const model = new ValidationModel();
     const fn = vi.fn();
-    model.onUpdate(fn);
+    model.autorun(fn);
     model.update([], []);
     expect(model.isValid).toBe(true);
     expect(fn).toHaveBeenCalledOnce();

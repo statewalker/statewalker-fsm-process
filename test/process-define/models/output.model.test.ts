@@ -15,7 +15,7 @@ describe("OutputModel", () => {
   it("setContent updates fields and triggers notify", () => {
     const model = new OutputModel();
     const fn = vi.fn();
-    model.onUpdate(fn);
+    model.autorun(fn);
     model.setContent("key: Root", "/out/file.yaml");
     expect(model.content).toBe("key: Root");
     expect(model.destination).toBe("/out/file.yaml");
@@ -27,7 +27,7 @@ describe("OutputModel", () => {
     const model = new OutputModel();
     model.setContent("yaml", "dest");
     const fn = vi.fn();
-    model.onUpdate(fn);
+    model.autorun(fn);
     model.markWritten();
     expect(model.isWritten).toBe(true);
     expect(fn).toHaveBeenCalledOnce();

@@ -1,5 +1,5 @@
 import { newAdapter } from "@/shared/adapters/index.ts";
-import { BaseClass, readValues } from "@/shared/base-class";
+import { Base, readValues } from "@/shared/base-class";
 
 // -----------------------------------------------------------
 // FSM parameters, stored by the FSM engine in the context during the execution.
@@ -15,14 +15,14 @@ export const [getFsmEvent] = newAdapter<string | null>("fsm:event", () => null);
 // -----------------------------------------------------------
 // Additional utility adapters, allowing to enqueue events for the FSM to process.
 
-export class EventModel extends BaseClass {
+export class EventModel extends Base {
   #event: string | null = null;
   get event(): string | null {
     return this.#event;
   }
 
   readEvents: () => AsyncGenerator<string> = () =>
-    readValues((cb) => this.onUpdate(cb), () => {
+    readValues((cb) => this.autorun(cb), () => {
       if (this.#event) {
         return this.#event;
       }
@@ -30,8 +30,10 @@ export class EventModel extends BaseClass {
 
   emit(event: string): void {
     if (event) {
-      this.#event = event;
-      this.notify();
+      return this.update(() => {
+        this.#event = event;
+      
+      });
     }
   }
 }

@@ -10,18 +10,17 @@ export async function* readValues<R>(
   onUpdate: (callback: () => void) => () => void,
   read: () => R | undefined,
 ): AsyncGenerator<R> {
-  let resolve: () => void = () => {};
-  const cleanup = onUpdate(() => resolve());
+  let cleanup = () => {};
   try {
     while (true) {
+      cleanup();
       const result = read();
       if (result !== undefined) {
         yield result;
-      } else {
-        await new Promise<void>((r) => {
-          resolve = r;
-        });
       }
+      await new Promise<void>((resolve) => {
+        cleanup = onUpdate(resolve);
+      });
     }
   } finally {
     cleanup();

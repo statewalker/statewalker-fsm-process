@@ -1,21 +1,25 @@
 import { newAdapter } from "@/shared/adapters/index.ts";
-import { BaseClass } from "@/shared/base-class/index.ts";
+import { Base } from "@/shared/base-class/index.ts";
 
-export class OutputModel extends BaseClass {
+export class OutputModel extends Base {
   content = "";
   destination = "";
   isWritten = false;
 
   setContent(yaml: string, dest: string): void {
-    this.content = yaml;
-    this.destination = dest;
-    this.isWritten = false;
-    this.notify();
+    return this.update(() => {
+      this.content = yaml;
+      this.destination = dest;
+      this.isWritten = false;
+    
+    });
   }
 
   markWritten(): void {
-    this.isWritten = true;
-    this.notify();
+    return this.update(() => {
+      this.isWritten = true;
+    
+    });
   }
 }
 

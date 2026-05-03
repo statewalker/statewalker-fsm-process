@@ -1,16 +1,18 @@
 import { newAdapter } from "@/shared/adapters/index.ts";
-import { BaseClass } from "@/shared/base-class/index.ts";
+import { Base } from "@/shared/base-class/index.ts";
 
-export class ProcessInputModel extends BaseClass {
+export class ProcessInputModel extends Base {
   description = "";
   source = "";
 
   setDescription(desc: string, source?: string): void {
-    this.description = desc;
-    if (source !== undefined) {
-      this.source = source;
-    }
-    this.notify();
+    return this.update(() => {
+      this.description = desc;
+      if (source !== undefined) {
+        this.source = source;
+      }
+    
+    });
   }
 }
 

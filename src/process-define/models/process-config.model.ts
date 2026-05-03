@@ -1,8 +1,8 @@
 import type { FsmStateConfig } from "@statewalker/fsm-validator";
 import { newAdapter } from "@/shared/adapters/index.ts";
-import { BaseClass } from "@/shared/base-class/index.ts";
+import { Base } from "@/shared/base-class/index.ts";
 
-export class ProcessConfigModel extends BaseClass {
+export class ProcessConfigModel extends Base {
   config: FsmStateConfig | undefined = undefined;
   iteration = 0;
   isGenerating = false;
@@ -12,15 +12,17 @@ export class ProcessConfigModel extends BaseClass {
     config?: FsmStateConfig;
     error?: unknown;
   }) => void {
-    this.isGenerating = true;
-    this.iteration++;
-    this.notify();
+    this.update(() => {
+      this.isGenerating = true;
+      this.iteration++;
+    });
     return (result) => {
-      this.isGenerating = false;
-      if (result.config) {
-        this.config = result.config;
-      }
-      this.notify();
+      this.update(() => {
+        this.isGenerating = false;
+        if (result.config) {
+          this.config = result.config;
+        }
+      });
     };
   }
 }

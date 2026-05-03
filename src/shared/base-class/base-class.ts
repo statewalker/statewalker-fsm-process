@@ -10,12 +10,12 @@
  *
  * @example
  * ```ts
- * class Counter extends BaseClass {
+ * class Counter extends Base {
  *   value = 0;
  *   increment() { this.value++; this.notify(); }
  * }
  * const c = new Counter();
- * const unsub = c.onUpdate(() => console.log(c.value));
+ * const unsub = c.autorun(() => console.log(c.value));
  * c.increment(); // logs 1
  * unsub();
  * ```

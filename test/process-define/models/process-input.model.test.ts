@@ -14,7 +14,7 @@ describe("ProcessInputModel", () => {
   it("setDescription updates description and triggers notify", () => {
     const model = new ProcessInputModel();
     const fn = vi.fn();
-    model.onUpdate(fn);
+    model.autorun(fn);
     model.setDescription("hello");
     expect(model.description).toBe("hello");
     expect(fn).toHaveBeenCalledOnce();
@@ -23,7 +23,7 @@ describe("ProcessInputModel", () => {
   it("setDescription updates source when provided", () => {
     const model = new ProcessInputModel();
     const fn = vi.fn();
-    model.onUpdate(fn);
+    model.autorun(fn);
     model.setDescription("hello", "file");
     expect(model.description).toBe("hello");
     expect(model.source).toBe("file");
